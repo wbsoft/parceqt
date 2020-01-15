@@ -1,10 +1,12 @@
-# livelex-qt
+livelex-qt
+==========
+
 Small Python library to use livelex with Qt's QTextDocument
 
 This module depends on livelex.
 
 Homepage: https://github.com/wbsoft/livelex-qt
-
+Download: https://pypi.org/project/livelex-qt
 
 Example:
 
