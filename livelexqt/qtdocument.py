@@ -81,7 +81,7 @@ class QTreeBuilder(QObject, BackgroundTreeBuilder):
             loop.exec_()
 
 
-class QtDocument(TreeDocumentMixin, AbstractDocument):
+class Document(TreeDocumentMixin, AbstractDocument):
     """QtDocument implements a Document encapsulating a QTextDocument.
 
     Use either QtDocument(doc) or QtDocument.instance(doc), where doc is a
@@ -165,7 +165,7 @@ class QtDocument(TreeDocumentMixin, AbstractDocument):
             super().contents_changed(position, removed, added)
 
 
-class QtSyntaxHighlighter(QtDocument):
+class SyntaxHighlighter(Document):
     """Provides syntax highlighting using livelex parsers.
 
     Implement get_format() and instantiate with:
