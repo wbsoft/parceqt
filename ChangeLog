@@ -2,7 +2,8 @@ ChangeLog of the Python livelex-qt package
 ==========================================
 
 
-2020-01-15: livelex-qt-0.1.0
+2020-01-15: livelex-qt-0.2.0
 
-- Initial setup (no release yet)
+- Incorporate qtdocument module from livelex
+- Initial release
 
