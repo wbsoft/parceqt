@@ -60,6 +60,15 @@ class SyntaxHighlighter(QObject):
         if builder.get_root():
             self.slot_updated(0, document.characterCount() - 1)
 
+    def clear(self):
+        """Clear the highlighting. Do this before deleting."""
+        doc = self.document()
+        block = doc.firstBlock()
+        while block.isValid():
+            block.layout().clearFormats()
+            block = block.next()
+        doc.markContentsDirty(0, doc.characterCount() - 1)
+
     def document(self):
         """Return the QTextDocument, which is our parent."""
         return self.parent()
