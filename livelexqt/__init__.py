@@ -23,3 +23,8 @@ The Python livelexqt module provides livelex parsing and highlighting
 features for Qt's QTextDocument.
 
 """
+
+from .treebuilder import TreeBuilder
+from .document import Document
+from .highlighter import SyntaxHighlighter
+
