@@ -23,36 +23,3 @@ The Python livelexqt module provides livelex parsing and highlighting
 features for Qt's QTextDocument.
 
 """
-
-import collections
-Version = collections.namedtuple("Version", "major minor patch")
-
-
-
-#: name of the package
-name = "livelex-qt"
-
-#: the current version
-version = Version(0, 1, 0)
-version_suffix = ""
-version_string = "{}.{}.{}".format(*version) + version_suffix
-
-#: short description
-description = "The livelexqt Python module"
-
-#: long description
-long_description = \
-    "Small module providing livelex parsing and highlighting for Qt"
-
-#: maintainer name
-maintainer = "Wilbert Berendsen"
-
-#: maintainer email
-maintainer_email = "info@wilbertberendsen.nl"
-
-#: homepage
-url = "https://github.com/wbsoft/livelex-qt"
-
-#: license
-license = "GPL"
-
