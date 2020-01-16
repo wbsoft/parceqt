@@ -40,7 +40,7 @@ class SyntaxHighlighter(QObject):
         MyHighlighter.instance(qTextDocument, root_lexicon)
 
     """
-    
+
     @classmethod
     def instance(cls, document):
         """Get or create the SyntaxHighlighter instance for the QTextDocument.
@@ -63,7 +63,7 @@ class SyntaxHighlighter(QObject):
     def document(self):
         """Return the QTextDocument, which is our parent."""
         return self.parent()
-        
+
     def root_lexicon(self):
         """Return the currently (being) set root lexicon."""
         builder = treebuilder.TreeBuilder.instance(self.document())

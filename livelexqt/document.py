@@ -34,12 +34,12 @@ from PyQt5.QtGui import QTextCursor
 from livelex.treedocument import TreeDocumentMixin
 from livelex.document import AbstractDocument
 
-from import treebuilder
+from . import treebuilder
 
 
 class Document(TreeDocumentMixin, AbstractDocument):
     """Document accesses a QTextDocument via the livelex.Document API.
-    
+
     There is no need to store this object, it is only used to access and \
     modify a QTextDocument.
 
@@ -47,8 +47,6 @@ class Document(TreeDocumentMixin, AbstractDocument):
     def __init__(self, document):
         """Initialize with QTextDocument."""
         AbstractDocument.__init__(self)
-        builder = treebuilder.TreeBuilder.instance(document)
-        TreeDocumentMixin.__init__(self, builder)
         self._document = document
 
     def document(self):
@@ -88,4 +86,17 @@ class Document(TreeDocumentMixin, AbstractDocument):
         c.setPosition(start, QTextCursor.KeepAnchor)
         return c.selection().toPlainText()
 
+    def contents_changed(self, start, removed, added):
+        """Reimplemented to do nothing, it is already handled by TreeBuilder."""
+        pass
+
+    def root_lexicon(self):
+        """Return the currently (being) set root lexicon."""
+        builder = treebuilder.TreeBuilder.instance(self.document())
+        return builder.root_lexicon()
+
+    def set_root_lexicon(self, root_lexicon):
+        """Set the root lexicon to use to tokenize the text. Triggers a rebuild."""
+        builder = treebuilder.TreeBuilder.instance(self.document())
+        builder.set_root_lexicon(root_lexicon)
 
