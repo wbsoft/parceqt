@@ -60,7 +60,7 @@ class SyntaxHighlighter:
         builder = treebuilder.TreeBuilder.instance(document)
         builder.updated.connect(self.slot_updated)
         if builder.get_root():
-            self.slot_updated(0, document.characterCount() - 1)
+            self.rehighlight()
 
     def clear(self):
         """Clear the highlighting. Do this before deleting."""
@@ -70,6 +70,10 @@ class SyntaxHighlighter:
             block.layout().clearFormats()
             block = block.next()
         doc.markContentsDirty(0, doc.characterCount() - 1)
+
+    def rehighlight(self):
+        """Draws the highlighting again. Normally not needed."""
+        self.slot_updated(0, self.document().characterCount() - 1)
 
     def document(self):
         """Return the QTextDocument."""
