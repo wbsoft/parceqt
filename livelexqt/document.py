@@ -40,7 +40,7 @@ from . import treebuilder
 class Document(TreeDocumentMixin, AbstractDocument):
     """Document accesses a QTextDocument via the livelex.Document API.
 
-    There is no need to store this object, it is only used to access and \
+    There is no need to store this object, it is only used to access and
     modify a QTextDocument.
 
     """

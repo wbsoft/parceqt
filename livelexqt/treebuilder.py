@@ -29,6 +29,7 @@ are generated.
 
 """
 
+import weakref
 
 from PyQt5.QtCore import pyqtSignal,QEventLoop, QObject, QThread
 
@@ -60,10 +61,14 @@ class TreeBuilder(QObject, BackgroundTreeBuilder):
         The QTextDocument becomes our parent.
 
         """
-        for obj in document.children():
-            if isinstance(obj, cls):
-                return obj
-        return cls(document, default_root_lexicon)
+        try:
+            return cls._instances[document]
+        except AttributeError:
+            cls._instances = weakref.WeakKeyDictionary()
+        except KeyError:
+            pass
+        new = cls._instances[document] = cls(document, default_root_lexicon)
+        return new
 
     def __init__(self, document, root_lexicon=None):
         QObject.__init__(self, document)

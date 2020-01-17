@@ -24,6 +24,8 @@ This module implements a SyntaxHighlighter.
 
 """
 
+import weakref
+
 from PyQt5.QtCore import QObject, Qt
 from PyQt5.QtGui import QTextCharFormat, QTextLayout
 
@@ -32,7 +34,7 @@ import livelex.util
 from . import treebuilder
 
 
-class SyntaxHighlighter(QObject):
+class SyntaxHighlighter:
     """Provides syntax highlighting using livelex parsers.
 
     Inherit, implement get_format() and instantiate with:
@@ -43,18 +45,18 @@ class SyntaxHighlighter(QObject):
 
     @classmethod
     def instance(cls, document):
-        """Get or create the SyntaxHighlighter instance for the QTextDocument.
-
-        The QTextDocument becomes our parent.
-
-        """
-        for obj in document.children():
-            if isinstance(obj, cls):
-                return obj
-        return cls(document)
+        """Get or create the SyntaxHighlighter instance for the QTextDocument."""
+        try:
+            return cls._instances[document]
+        except AttributeError:
+            cls._instances = weakref.WeakKeyDictionary()
+        except KeyError:
+            pass
+        new = cls._instances[document] = cls(document)
+        return new
 
     def __init__(self, document):
-        super().__init__(document)
+        self._document = document
         builder = treebuilder.TreeBuilder.instance(document)
         builder.updated.connect(self.slot_updated)
         if builder.get_root():
@@ -70,8 +72,8 @@ class SyntaxHighlighter(QObject):
         doc.markContentsDirty(0, doc.characterCount() - 1)
 
     def document(self):
-        """Return the QTextDocument, which is our parent."""
-        return self.parent()
+        """Return the QTextDocument."""
+        return self._document
 
     def root_lexicon(self):
         """Return the currently (being) set root lexicon."""
