@@ -32,9 +32,10 @@ from PyQt5.QtGui import QTextCharFormat, QTextLayout
 import livelex.util
 
 from . import treebuilder
+from . import util
 
 
-class SyntaxHighlighter:
+class SyntaxHighlighter(util.SingleInstance):
     """Provides syntax highlighting using livelex parsers.
 
     Inherit, implement get_format() and instantiate with:
@@ -42,25 +43,16 @@ class SyntaxHighlighter:
         MyHighlighter.instance(qTextDocument, root_lexicon)
 
     """
-
-    @classmethod
-    def instance(cls, document):
-        """Get or create the SyntaxHighlighter instance for the QTextDocument."""
-        try:
-            return cls._instances[document]
-        except AttributeError:
-            cls._instances = weakref.WeakKeyDictionary()
-        except KeyError:
-            pass
-        new = cls._instances[document] = cls(document)
-        return new
-
-    def __init__(self, document):
-        self._document = document
-        builder = treebuilder.TreeBuilder.instance(document)
+    def __init__(self, document, default_root_lexicon=None):
+        builder = treebuilder.TreeBuilder.instance(document, default_root_lexicon)
         builder.updated.connect(self.slot_updated)
         if builder.get_root():
             self.rehighlight()
+
+    def delete(self):
+        """Reimplemented to clear the highlighting before delete."""
+        self.clear()
+        super().delete()
 
     def clear(self):
         """Clear the highlighting. Do this before deleting."""
@@ -77,7 +69,7 @@ class SyntaxHighlighter:
 
     def document(self):
         """Return the QTextDocument."""
-        return self._document
+        return self.target_object()
 
     def root_lexicon(self):
         """Return the currently (being) set root lexicon."""

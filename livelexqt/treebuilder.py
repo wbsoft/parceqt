@@ -35,6 +35,8 @@ from PyQt5.QtCore import pyqtSignal,QEventLoop, QObject, QThread
 
 from livelex.treebuilder import BackgroundTreeBuilder
 
+from . import util
+
 
 class Job(QThread):
     def __init__(self, builder):
@@ -45,7 +47,7 @@ class Job(QThread):
         self.builder.process_changes()
 
 
-class TreeBuilder(QObject, BackgroundTreeBuilder):
+class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
     """A BackgroundTreeBuilder that uses Qt signals instead of callbacks.
 
     This TreeBuilder is attachted to a QTextDocument, and automatically
@@ -53,22 +55,6 @@ class TreeBuilder(QObject, BackgroundTreeBuilder):
 
     """
     updated = pyqtSignal(int, int)  # emitted when one full run finished
-
-    @classmethod
-    def instance(cls, document, default_root_lexicon=None):
-        """Get or create the TreeBuilder instance for the QTextDocument.
-
-        The QTextDocument becomes our parent.
-
-        """
-        try:
-            return cls._instances[document]
-        except AttributeError:
-            cls._instances = weakref.WeakKeyDictionary()
-        except KeyError:
-            pass
-        new = cls._instances[document] = cls(document, default_root_lexicon)
-        return new
 
     def __init__(self, document, root_lexicon=None):
         QObject.__init__(self, document)
