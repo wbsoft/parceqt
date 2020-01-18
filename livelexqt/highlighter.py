@@ -26,8 +26,8 @@ This module implements a SyntaxHighlighter.
 
 import weakref
 
-from PyQt5.QtCore import QObject, Qt
-from PyQt5.QtGui import QTextCharFormat, QTextLayout
+from PyQt5.QtCore import QEventLoop, QObject, Qt
+from PyQt5.QtGui import QGuiApplication, QTextCharFormat, QTextLayout
 
 import livelex.util
 
@@ -43,6 +43,8 @@ class SyntaxHighlighter(util.SingleInstance):
         MyHighlighter.instance(qTextDocument, root_lexicon)
 
     """
+    quit_end = -1
+
     def __init__(self, document, default_root_lexicon=None):
         builder = treebuilder.TreeBuilder.instance(document, default_root_lexicon)
         builder.updated.connect(self.slot_updated)
@@ -121,10 +123,14 @@ class SyntaxHighlighter(util.SingleInstance):
         doc = self.document()
         block = doc.findBlock(start)
         start = pos = block.position()
+        if self.quit_end != -1:
+            # we had interrupted our previous highlighting range, fix it now
+            end = max(end, self.quit_end)
         last_block = self.document().findBlock(end)
         end = last_block.position() + last_block.length() - 1
         formats = []
-        root = treebuilder.TreeBuilder.instance(self.document()).root
+        builder = treebuilder.TreeBuilder.instance(doc)
+        root = builder.root
         for t_pos, t_end, action in livelex.util.merge_adjacent_actions(
                 root.tokens_range(start, end)):
             while t_pos >= pos + block.length():
@@ -148,10 +154,19 @@ class SyntaxHighlighter(util.SingleInstance):
                 r.start = 0
             r.length = t_end - pos - r.start
             formats.append(r)
+            if block.blockNumber() % 1000 == 100:
+                doc.markContentsDirty(start, pos - start)
+                start = pos
+                QGuiApplication.processEvents(QEventLoop.ExcludeSocketNotifiers)
+                # if the user typed, immediately quit, but come back!
+                if builder.changes and builder.changes.has_changes():
+                    self.quit_end = builder.changes.new_position(max(self.quit_end, end))
+                    return
         block.layout().setFormats(formats)
         while block < last_block:
             block = block.next()
             block.layout().clearFormats()
+        self.quit_end = -1  # we have finished highlighting
         doc.markContentsDirty(start, end - start)
 
     def get_format(self, action):
