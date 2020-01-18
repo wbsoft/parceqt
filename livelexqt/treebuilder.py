@@ -106,6 +106,10 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
 
     def slot_contents_change(self, start, removed, added):
         """Called after modification of the text, retokenizes the modified part."""
+        # if the change is in one block, emit a special signal immediately
+        b = self.document().findBlock(start)
+        if start + added < b.position() + b.length():
+            pass # TODO
         with self.change() as c:
             c.change_contents(self.document().toPlainText(), start, removed, added)
 
