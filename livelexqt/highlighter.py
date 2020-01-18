@@ -43,12 +43,15 @@ class SyntaxHighlighter(util.SingleInstance):
         MyHighlighter.instance(qTextDocument, root_lexicon)
 
     """
-    quit_end = -1
+    gap_start = 0
+    gap_end = 0
+    changed = False
 
     def __init__(self, document, default_root_lexicon=None):
         builder = treebuilder.TreeBuilder.instance(document, default_root_lexicon)
         builder.updated.connect(self.slot_updated)
         builder.changed.connect(self.slot_changed)
+        document.contentsChange.connect(self.slot_contents_change)
         if builder.get_root():
             self.rehighlight()
 
@@ -84,6 +87,24 @@ class SyntaxHighlighter(util.SingleInstance):
         builder = treebuilder.TreeBuilder.instance(self.document())
         builder.set_root_lexicon(root_lexicon)
 
+    def slot_contents_change(self, start, removed, added):
+        """Called on every contents change.
+
+        This is used to know what we need to redraw if we quit an earlier
+        highlighting run.
+
+        """
+        if self.changed is not False:
+            self.changed = True
+            if self.gap_start >= start + removed:
+                self.gap_start = start - removed + added
+            elif self.gap_start > start:
+                self.gap_start = start + added
+            if self.gap_end >= start + removed:
+                self.gap_end = start - removed + added
+            elif self.gap_end >= start:
+                self.gap_end = start + added
+
     def slot_changed(self, start, offset):
         """Called on small changes, allows for moving the formats, awaiting the tokenizer."""
         doc = self.document()
@@ -106,7 +127,7 @@ class SyntaxHighlighter(util.SingleInstance):
                 else:
                     del formats[i:]
             else:
-                if r.start < start:
+                if r.start <= start:
                     # overlap
                     r.length = max(start - r.start, r.length + offset)
                     i += 1
@@ -120,13 +141,15 @@ class SyntaxHighlighter(util.SingleInstance):
 
     def slot_updated(self, start, end):
         """Called on update; performs the highlighting."""
+        if self.gap_start != self.gap_end:
+            # we had interrupted our previous highlighting range, fix it now
+            start = min(start, self.gap_start)
+            end = max(end, self.gap_end)
         doc = self.document()
         block = doc.findBlock(start)
         start = pos = block.position()
-        if self.quit_end != -1:
-            # we had interrupted our previous highlighting range, fix it now
-            end = max(end, self.quit_end)
-        last_block = self.document().findBlock(end)
+        num = block.blockNumber() + 100
+        last_block = doc.findBlock(end)
         end = last_block.position() + last_block.length() - 1
         formats = []
         builder = treebuilder.TreeBuilder.instance(doc)
@@ -154,20 +177,27 @@ class SyntaxHighlighter(util.SingleInstance):
                 r.start = 0
             r.length = t_end - pos - r.start
             formats.append(r)
-            if block.blockNumber() % 1000 == 100:
+            if block.blockNumber() > num:
+                num = block.blockNumber() + 1000
                 doc.markContentsDirty(start, pos - start)
                 start = pos
+                self.gap_start = pos
+                self.gap_end = max(self.gap_end, end)
+                self.changed = None
                 QGuiApplication.processEvents(QEventLoop.ExcludeSocketNotifiers)
                 # if the user typed, immediately quit, but come back!
-                if builder.changes and builder.changes.has_changes():
-                    self.quit_end = builder.changes.new_position(max(self.quit_end, end))
+                if self.changed:
                     return
+                self.changed = False
         block.layout().setFormats(formats)
         while block < last_block:
             block = block.next()
             block.layout().clearFormats()
-        self.quit_end = -1  # we have finished highlighting
         doc.markContentsDirty(start, end - start)
+        # we have finished highlighting
+        self.gap_start = 0
+        self.gap_end = 0
+        self.changed = False
 
     def get_format(self, action):
         """Implement this method to return a QTextCharFormat for the action."""
