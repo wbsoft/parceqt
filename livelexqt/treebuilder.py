@@ -121,6 +121,6 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
                 # formats need to be cleared from start
                 self.changed.emit(start, 0)
         with self.change() as c:
-            c.change_contents(self.document().toPlainText(), start, removed, added)
+            c.change_contents(doc.toPlainText(), start, removed, added)
 
 
