@@ -32,6 +32,7 @@ are generated.
 import weakref
 
 from PyQt5.QtCore import pyqtSignal,QEventLoop, QObject, QThread
+from PyQt5.QtGui import QTextBlock
 
 from livelex.treebuilder import BackgroundTreeBuilder
 
@@ -55,6 +56,7 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
 
     """
     updated = pyqtSignal(int, int)  # emitted when one full run finished
+    changed = pyqtSignal(int, int)  # emitted when a contents change falls in one block
 
     def __init__(self, document, root_lexicon=None):
         QObject.__init__(self, document)
@@ -107,9 +109,17 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
     def slot_contents_change(self, start, removed, added):
         """Called after modification of the text, retokenizes the modified part."""
         # if the change is in one block, emit a special signal immediately
-        b = self.document().findBlock(start)
-        if start + added < b.position() + b.length():
-            pass # TODO
+        doc = self.document()
+        b = doc.findBlock(start)
+        leftover = b.position() + b.length() - start
+        if leftover > 2:
+            if added < leftover and removed < leftover:
+                if added != removed:
+                    # formats need to be shifted in the current block
+                    self.changed.emit(start, added - removed)
+            else:
+                # formats need to be cleared from start
+                self.changed.emit(start, 0)
         with self.change() as c:
             c.change_contents(self.document().toPlainText(), start, removed, added)
 
