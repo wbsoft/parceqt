@@ -100,9 +100,9 @@ class SyntaxHighlighter(util.SingleInstance):
             r = formats[i]
             if offset == 0:
                 if r.start < start:
-                    del formats[i:]
+                    del formats[i+1:]
                 else:
-                    del formats[i+i:]
+                    del formats[i:]
             else:
                 if r.start < start:
                     # overlap
