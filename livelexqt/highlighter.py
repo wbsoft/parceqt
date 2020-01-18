@@ -46,6 +46,7 @@ class SyntaxHighlighter(util.SingleInstance):
     def __init__(self, document, default_root_lexicon=None):
         builder = treebuilder.TreeBuilder.instance(document, default_root_lexicon)
         builder.updated.connect(self.slot_updated)
+        builder.changed.connect(self.slot_changed)
         if builder.get_root():
             self.rehighlight()
 
@@ -80,6 +81,40 @@ class SyntaxHighlighter(util.SingleInstance):
         """Set the root lexicon to use to tokenize the text. Triggers a rebuild."""
         builder = treebuilder.TreeBuilder.instance(self.document())
         builder.set_root_lexicon(root_lexicon)
+
+    def slot_changed(self, start, offset):
+        """Called on small changes, allows for moving the formats, awaiting the tokenizer."""
+        doc = self.document()
+        block = doc.findBlock(start)
+        formats = block.layout().formats()
+        i = 0
+        hi = len(formats)
+        while i < hi:
+            mid = (i + hi) // 2
+            r = formats[mid]
+            if r.start + r.length <= start:
+                i = mid + 1
+            else:
+                hi = mid
+        if i < len(formats):
+            r = formats[i]
+            if offset == 0:
+                if r.start < start:
+                    del formats[i:]
+                else:
+                    del formats[i+i:]
+            else:
+                if r.start < start:
+                    # overlap
+                    r.length = max(start - r.start, r.length + offset)
+                    i += 1
+                for r in formats[i:]:
+                    # move whole format
+                    r.start += offset
+                    if r.start < start:
+                        r.length -= start - r.start
+                        r.start = start
+            block.layout().setFormats(formats)
 
     def slot_updated(self, start, end):
         """Called on update; performs the highlighting."""
