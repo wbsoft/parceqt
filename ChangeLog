@@ -2,6 +2,15 @@ ChangeLog of the Python livelex-qt package
 ==========================================
 
 
+2020-01-??: livelex-qt-0.3.0
+
+- Better documentation
+- Split classes over separate modules files, accessible via the toplevel
+  package
+- robustness improvements, highlighting must happen in the main thread but
+  it regularly polls for user events and restarts if needed.
+
+
 2020-01-15: livelex-qt-0.2.0
 
 - Incorporate qtdocument module from livelex

@@ -22,7 +22,85 @@
 The Python livelexqt module provides livelex parsing and highlighting
 features for Qt's QTextDocument.
 
+This module depends on the livelex module.
+
+The following classes are provided: TreeBuilder, Document and
+SyntaxHighlighter. The module's version is available through the version (a
+tuple) and version_string variables.
+
+
+TreeBuilder
+-----------
+
+The TreeBuilder inherits livelex.BackgroundTreeBuilder, but uses a Qt
+QThread to build the tree of tokens in the background, emitting an updated()
+signal when the tree is ready. The TreeBuilder is a QObject itself, and
+becomes the child of the QTextDocument it keeps tokenized.
+
+The following code gets a TreeBuilder for a textdocument, creating it if
+necessary:
+
+    builder = TreeBuilder.instance(qtextdocument)
+
+You can set the root lexicon with:
+
+    builder.set_root_lexicon(MyLang.root)
+
+This method call will immediately return, a background thread will be started
+to retokenize the document. (If a tokenizing process was already busy, it
+immediately adapts to the current change.)
+
+To get the tree, use builder.get_root(). If this returns None, tokenizing is
+still busy. Use get_root(True) to wait, or get_root(callback=my_callback) to
+be notified.
+
+Document
+--------
+
+The Document just implements livelex.TreeDocument around a QTextDocument. You
+do not need to store the Document, you can just use it to manipulate the
+QTextDocument through the livelex.AbstractDocument API. You can also get
+the tree of tokens, which is created and kept by the TreeBuilder.
+
+Use it like this:
+
+    with Document(qtextdocument) as d:
+        d[20:30] = "new text"
+        # etc
+
+After leaving the context, the changes are applied to the QTextDocument,
+and you can safely let the Document being garbage collected.
+
+
+SyntaxHighlighter
+-----------------
+
+The SyntaxHighlighter can live on its own and connects to the updated()
+signal of the TreeBuilder and highlights the text in the QTextDocument.
+Currently, you need to inherit from it and implement the get_format()
+method, which should return a QTextFormat for the specified action.
+
+Usage:
+
+    class MyHighlighter(SyntaxHighlighter):
+        def get_format(self, action):
+            # whatever it takes to return a QTextFormat
+            return some_QTextFormat[action]
+
+    MyHighlighter.instance(qtextdocument)
+
+The SyntaxHighlighter is a QObject which becomes a child of the QTextDocument
+as well. To stop the highlighting, call:
+
+    MyHighlighter.delete_instance(qtextdocument)
+
+or:
+
+    MyHighlighter.instance(qtextdocument).delete()
+
 """
+
+from .pkginfo import version, version_string
 
 from .treebuilder import TreeBuilder
 from .document import Document
