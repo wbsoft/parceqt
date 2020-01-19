@@ -109,6 +109,7 @@ class SyntaxHighlighter(util.SingleInstance):
         """Called on small changes, allows for moving the formats, awaiting the tokenizer."""
         doc = self.document()
         block = doc.findBlock(start)
+        start -= block.position()
         formats = block.layout().formats()
         i = 0
         hi = len(formats)
