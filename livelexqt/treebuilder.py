@@ -29,8 +29,6 @@ are generated.
 
 """
 
-import weakref
-
 from PyQt5.QtCore import pyqtSignal,QEventLoop, QObject, QThread
 from PyQt5.QtGui import QTextBlock
 
