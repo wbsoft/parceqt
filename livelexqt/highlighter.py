@@ -151,6 +151,8 @@ class SyntaxHighlighter(util.SingleInstance):
         start = pos = block.position()
         num = block.blockNumber() + 100
         last_block = doc.findBlock(end)
+        if not last_block.isValid():
+            last_block = doc.lastBlock()
         end = last_block.position() + last_block.length() - 1
         formats = []
         builder = treebuilder.TreeBuilder.instance(doc)
