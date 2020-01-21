@@ -2,7 +2,7 @@ ChangeLog of the Python livelex-qt package
 ==========================================
 
 
-2020-01-??: livelex-qt-0.3.0
+2020-01-21: livelex-qt-0.3.0
 
 - Better documentation
 - Split classes over separate modules files, accessible via the toplevel
