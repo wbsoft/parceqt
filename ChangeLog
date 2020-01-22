@@ -1,5 +1,10 @@
-ChangeLog of the Python livelex-qt package
-==========================================
+ChangeLog of the Python parceqt package
+=======================================
+
+
+2020-01-22: parceqt-0.3.0
+
+- Renamed to parceqt
 
 
 2020-01-21: livelex-qt-0.3.0

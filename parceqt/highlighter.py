@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the livelex-qt Python package.
+# This file is part of the parce-qt Python package.
 #
 # Copyright © 2020 by Wilbert Berendsen <info@wilbertberendsen.nl>
 #
@@ -27,14 +27,14 @@ This module implements a SyntaxHighlighter.
 from PyQt5.QtCore import QEventLoop, QObject, Qt
 from PyQt5.QtGui import QGuiApplication, QTextCharFormat, QTextLayout
 
-import livelex.util
+import parce.util
 
 from . import treebuilder
 from . import util
 
 
 class SyntaxHighlighter(util.SingleInstance):
-    """Provides syntax highlighting using livelex parsers.
+    """Provides syntax highlighting using parce parsers.
 
     Inherit, implement get_format() and instantiate with:
 
@@ -155,7 +155,7 @@ class SyntaxHighlighter(util.SingleInstance):
         formats = []
         builder = treebuilder.TreeBuilder.instance(doc)
         root = builder.root
-        for t_pos, t_end, action in livelex.util.merge_adjacent_actions(
+        for t_pos, t_end, action in parce.util.merge_adjacent_actions(
                 root.tokens_range(start, end)):
             while t_pos >= pos + block.length():
                 block.layout().setFormats(formats)
@@ -205,16 +205,16 @@ class SyntaxHighlighter(util.SingleInstance):
         ### TEMP!
         from PyQt5.QtGui import QFont
         f = QTextCharFormat()
-        if action in livelex.String:
+        if action in parce.String:
             f.setForeground(Qt.red)
-        elif action in livelex.Name:
+        elif action in parce.Name:
             f.setForeground(Qt.blue)
-        if action in livelex.Comment:
+        if action in parce.Comment:
             f.setForeground(Qt.darkGray)
             f.setFontItalic(True)
-        if action in livelex.Delimiter:
+        if action in parce.Delimiter:
             f.setFontWeight(QFont.Bold)
-        if action in livelex.Escape:
+        if action in parce.Escape:
             f.setForeground(Qt.darkGreen)
         return f
 

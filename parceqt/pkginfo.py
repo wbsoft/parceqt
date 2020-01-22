@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the livelex-qt Python package.
+# This file is part of the parce-qt Python package.
 #
 # Copyright © 2020 by Wilbert Berendsen <info@wilbertberendsen.nl>
 #
@@ -19,7 +19,7 @@
 
 
 """
-Meta-information about the livelex-qt package.
+Meta-information about the parce-qt package.
 
 This information is used by the install script, and can be queried
 from other applications.
@@ -32,7 +32,7 @@ Version = collections.namedtuple("Version", "major minor patch")
 
 
 #: name of the package
-name = "livelex-qt"
+name = "parce-qt"
 
 #: the current version
 version = Version(0, 3, 0)
@@ -40,11 +40,11 @@ version_suffix = ""
 version_string = "{}.{}.{}".format(*version) + version_suffix
 
 #: short description
-description = "The livelexqt Python module"
+description = "The parceqt Python module"
 
 #: long description
 long_description = \
-    "Small module providing livelex parsing and highlighting for Qt"
+    "Small module providing parce parsing and highlighting for Qt"
 
 #: maintainer name
 maintainer = "Wilbert Berendsen"
@@ -53,7 +53,7 @@ maintainer = "Wilbert Berendsen"
 maintainer_email = "info@wilbertberendsen.nl"
 
 #: homepage
-url = "https://github.com/wbsoft/livelex-qt"
+url = "https://github.com/wbsoft/parce-qt"
 
 #: license
 license = "GPL"

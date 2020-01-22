@@ -1,12 +1,12 @@
-livelex-qt
-==========
+parceqt
+=======
 
-Small Python library to use livelex with Qt's QTextDocument
+Small Python library to use parce with Qt's QTextDocument
 
-This module depends on livelex.
+This module depends on parce.
 
-Homepage: https://github.com/wbsoft/livelex-qt
-Download: https://pypi.org/project/livelex-qt
+Homepage: https://github.com/wbsoft/parce-qt
+Download: https://pypi.org/project/parce-qt
 
 Example:
 
@@ -17,12 +17,12 @@ Example:
 
     app = QApplication([])
 
-    import livelexqt
-    import livelex.lang.xml
+    import parceqt
+    import parce.lang.xml
 
-    lexicon = livelex.lang.xml.Xml.root
+    lexicon = parce.lang.xml.Xml.root
     doc = QTextDocument()
-    livelexqt.SyntaxHighlighter.instance(doc, lexicon)
+    parceqt.SyntaxHighlighter.instance(doc, lexicon)
 
     # Now the text in the document is automatically highlighted using the
     # specified root lexicon.

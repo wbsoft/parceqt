@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the livelex-qt Python package.
+# This file is part of the parce-qt Python package.
 #
 # Copyright © 2020 by Wilbert Berendsen <info@wilbertberendsen.nl>
 #
@@ -19,10 +19,10 @@
 
 
 """
-The Python livelexqt module provides livelex parsing and highlighting
+The Python parceqt module provides parce parsing and highlighting
 features for Qt's QTextDocument.
 
-This module depends on the livelex module.
+This module depends on the parce module.
 
 The following classes are provided: TreeBuilder, Document and
 SyntaxHighlighter. The module's version is available through the version (a
@@ -32,7 +32,7 @@ tuple) and version_string variables.
 TreeBuilder
 -----------
 
-The TreeBuilder inherits livelex.BackgroundTreeBuilder, but uses a Qt
+The TreeBuilder inherits parce.BackgroundTreeBuilder, but uses a Qt
 QThread to build the tree of tokens in the background, emitting an updated()
 signal when the tree is ready. The TreeBuilder is a QObject itself, and
 becomes the child of the QTextDocument it keeps tokenized.
@@ -57,9 +57,9 @@ be notified.
 Document
 --------
 
-The Document just implements livelex.TreeDocument around a QTextDocument. You
+The Document just implements parce.TreeDocument around a QTextDocument. You
 do not need to store the Document, you can just use it to manipulate the
-QTextDocument through the livelex.AbstractDocument API. You can also get
+QTextDocument through the parce.AbstractDocument API. You can also get
 the tree of tokens, which is created and kept by the TreeBuilder.
 
 Use it like this:

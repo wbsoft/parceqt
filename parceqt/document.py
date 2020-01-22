@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the livelex-qt Python package.
+# This file is part of the parce-qt Python package.
 #
 # Copyright © 2020 by Wilbert Berendsen <info@wilbertberendsen.nl>
 #
@@ -22,7 +22,7 @@
 This module implements a Document encapsulating a QTextDocument.
 
 It is not needed to store the Document itself, it is only used
-to modify the QTextDocument through the livelex.Document API.
+to modify the QTextDocument through the parce.Document API.
 
 We do not ourself retokenize the text, that is done by a TreeBuilder
 that is automatically connected to the document.
@@ -31,14 +31,14 @@ that is automatically connected to the document.
 
 from PyQt5.QtGui import QTextCursor
 
-from livelex.treedocument import TreeDocumentMixin
-from livelex.document import AbstractDocument
+from parce.treedocument import TreeDocumentMixin
+from parce.document import AbstractDocument
 
 from . import treebuilder
 
 
 class Document(TreeDocumentMixin, AbstractDocument):
-    """Document accesses a QTextDocument via the livelex.Document API.
+    """Document accesses a QTextDocument via the parce.Document API.
 
     There is no need to store this object, it is only used to access and
     modify a QTextDocument.

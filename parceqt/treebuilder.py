@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the livelex-qt Python package.
+# This file is part of the parce-qt Python package.
 #
 # Copyright © 2020 by Wilbert Berendsen <info@wilbertberendsen.nl>
 #
@@ -32,7 +32,7 @@ are generated.
 from PyQt5.QtCore import pyqtSignal,QEventLoop, QObject, QThread
 from PyQt5.QtGui import QTextBlock
 
-from livelex.treebuilder import BackgroundTreeBuilder
+from parce.treebuilder import BackgroundTreeBuilder
 
 from . import util
 

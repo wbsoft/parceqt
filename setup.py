@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the livelex-qt Python package.
+# This file is part of the parce-qt Python package.
 #
 # Copyright © 2020 by Wilbert Berendsen <info@wilbertberendsen.nl>
 #
@@ -29,7 +29,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-from livelexqt import pkginfo
+from parceqt import pkginfo
 
 
 def packagelist(directory):
@@ -40,7 +40,7 @@ def packagelist(directory):
         if '__init__.py' in files))
 
 scripts = []
-packages = packagelist('./livelexqt')
+packages = packagelist('./parceqt')
 py_modules = []
 
 with open('README.rst', encoding="utf-8") as f:
