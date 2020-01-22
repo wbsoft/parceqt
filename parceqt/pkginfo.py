@@ -32,7 +32,7 @@ Version = collections.namedtuple("Version", "major minor patch")
 
 
 #: name of the package
-name = "parce-qt"
+name = "parceqt"
 
 #: the current version
 version = Version(0, 3, 0)
@@ -53,7 +53,7 @@ maintainer = "Wilbert Berendsen"
 maintainer_email = "info@wilbertberendsen.nl"
 
 #: homepage
-url = "https://github.com/wbsoft/parce-qt"
+url = "https://github.com/wbsoft/parceqt"
 
 #: license
 license = "GPL"
