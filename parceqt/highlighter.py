@@ -155,7 +155,7 @@ class SyntaxHighlighter(util.SingleInstance):
         formats = []
         builder = treebuilder.TreeBuilder.instance(doc)
         root = builder.root
-        for t_pos, t_end, action in parce.util.merge_adjacent_actions(
+        for t_pos, t_end, action, language in parce.util.merge_adjacent_actions(
                 root.tokens_range(start, end)):
             while t_pos >= pos + block.length():
                 block.layout().setFormats(formats)
@@ -163,7 +163,7 @@ class SyntaxHighlighter(util.SingleInstance):
                 pos = block.position()
                 formats = []
             r = QTextLayout.FormatRange()
-            r.format = f = self.get_format(action)
+            r.format = f = self.get_format(action, language)
             r.start = t_pos - pos
             t_end = min(end, t_end)
             while t_end > pos + block.length():
@@ -200,7 +200,7 @@ class SyntaxHighlighter(util.SingleInstance):
         self.gap_end = 0
         self.changed = False
 
-    def get_format(self, action):
+    def get_format(self, action, language):
         """Implement this method to return a QTextCharFormat for the action."""
         ### TEMP!
         from PyQt5.QtGui import QFont
