@@ -64,10 +64,27 @@ def _font_point_size(size, unit):
     elif unit == "px":
         return size * 12 / 16
     elif unit in ("rem", "em"):
-        return size / 12
+        return size * 12
     elif unit == "%":
         return size * 12 / 100
     return 12
+
+
+def _font_stretch(stretch):
+    """Return a suitable font stretch."""
+    if isinstance(stretch, str):
+        return {
+            "ultra-condensed": 50,
+            "extra-condensed": 62,
+            "condensed": 75,
+            "semi-condensed": 87,
+            "normal": 100,
+            "semi-expanded": 112,
+            "expanded": 125,
+            "extra-expanded": 150,
+            "ultra-expanded": 200,
+        }.get(stretch, 100)
+    return int(stretch)
 
 
 def _font_weight(weight):
@@ -138,6 +155,8 @@ def text_format(properties):
         f.setFontFamilies(p.font_family)
     if p.font_size:
         f.setFontPointSize(_font_size(p.font_size, p.font_size_unit))
+    if p.font_stretch:
+        f.setFontStretch(_font_stretch(p.font_stretch))
     if p.font_style in ('italic', 'oblique'):
         f.setFontItalic(True)
     if p.font_variant_caps == "small-caps":
