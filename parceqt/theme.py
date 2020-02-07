@@ -49,8 +49,25 @@ def _font_weight(weight):
         elif weight == "lighter":
             return QFont.Light
     else:
-        return int(weight / 10) #TEMP
-    return QFont.Medium
+        if weight >= 900:
+            return QFont.Black
+        elif weight >= 800:
+            return QFont.ExtraBold
+        elif weight >= 700:
+            return QFont.Bold
+        elif weight >= 600:
+            return QFont.DemiBold
+        elif weight >= 500:
+            return QFont.Medium
+        elif weight >= 400:
+            return QFont.Normal
+        elif weight >= 300:
+            return QFont.Light
+        elif weight >= 200:
+            return QFont.ExtraLight
+        else:
+            return QFont.Thin
+    return QFont.Normal
 
 
 def text_format(properties):
