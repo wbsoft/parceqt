@@ -54,7 +54,7 @@ def _font_point_size(size, unit):
             "medium": 12,
             "large": 14,
             "x-large": 16,
-            "xx-large": 12,
+            "xx-large": 20,
             "xxx-large": 24,
             "larger": 14,
             "smaller": 10,
