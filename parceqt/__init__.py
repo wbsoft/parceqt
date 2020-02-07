@@ -24,79 +24,63 @@ features for Qt's QTextDocument.
 
 This module depends on the parce module.
 
-The following classes are provided: TreeBuilder, Document and
-SyntaxHighlighter. The module's version is available through the version (a
-tuple) and version_string variables.
-
-
-TreeBuilder
------------
-
-The TreeBuilder inherits parce.BackgroundTreeBuilder, but uses a Qt
-QThread to build the tree of tokens in the background, emitting an updated()
-signal when the tree is ready. The TreeBuilder is a QObject itself, and
-becomes the child of the QTextDocument it keeps tokenized.
-
-The following code gets a TreeBuilder for a textdocument, creating it if
-necessary:
-
-    builder = TreeBuilder.instance(qtextdocument)
-
-You can set the root lexicon with:
-
-    builder.set_root_lexicon(MyLang.root)
-
-This method call will immediately return, a background thread will be started
-to retokenize the document. (If a tokenizing process was already busy, it
-immediately adapts to the current change.)
-
-To get the tree, use builder.get_root(). If this returns None, tokenizing is
-still busy. Use get_root(True) to wait, or get_root(callback=my_callback) to
-be notified.
-
-Document
---------
-
-The Document just implements parce.TreeDocument around a QTextDocument. You
-do not need to store the Document, you can just use it to manipulate the
-QTextDocument through the parce.AbstractDocument API. You can also get
-the tree of tokens, which is created and kept by the TreeBuilder.
-
-Use it like this:
-
-    with Document(qtextdocument) as d:
-        d[20:30] = "new text"
-        # etc
-
-After leaving the context, the changes are applied to the QTextDocument,
-and you can safely let the Document being garbage collected.
-
-
-SyntaxHighlighter
------------------
-
-The SyntaxHighlighter can live on its own and connects to the updated()
-signal of the TreeBuilder and highlights the text in the QTextDocument.
-It works out of the box, using the default parce theme.
-
-The SyntaxHighlighter is a QObject which becomes a child of the QTextDocument
-as well. To stop the highlighting, call:
-
-    MyHighlighter.delete_instance(qtextdocument)
-
-or:
-
-    MyHighlighter.instance(qtextdocument).delete()
-
-of just:
-
+With a few simple function calls you can highlight the syntax of
+QTextDocument using parce.
 
 """
 
 from .pkginfo import version, version_string
-
-from .treebuilder import TreeBuilder
 from .document import Document
-from .highlighter import SyntaxHighlighter
-from .theme import Theme, MetaTheme
+
+
+def builder(doc):
+    """Return the TreeBuilder responsible for tokenizing this QTextDocument.
+
+    If no TreeBuilder already existed, it is instantiated and becomes a child
+    of the QTextDocument. You can connect to its ``updated()`` or ``changed()``
+    signal to get notified of changes in the tokenized tree.
+
+    """
+    from . import treebuilder
+    return treebuilder.TreeBuilder.instance(doc)
+
+def root(doc, wait=False, callback=None, args=None, kwargs=None):
+    """Get the root element of the tokenized tree of specified text document.
+
+    See for more information about the arguments the ``get_root()`` method
+    of ``parce.treebuilder.BackgroundTreeBuilder``.
+
+    """
+    return builder(doc).get_root(wait, callback, args, kwargs)
+
+
+def set_root_lexicon(doc, lexicon):
+    """Instatiate a TreeBuilder for the document if needed, and set its root lexicon."""
+    builder(doc).set_root_lexicon(lexicon)
+
+
+def root_lexicon(doc):
+    """Return the currently active root lexicon for the QTextDocument."""
+    return builder(doc).root_lexicon()
+
+
+def highlight(doc, theme="default"):
+    """Set the highlighting Theme for the document.
+
+    Use a string value to select a Theme by name. Use None to disable
+    highlighting, or use False to force the SyntaxHighlighter to quit.
+
+    Of course, highlighting becomes only visible when the document has a
+    root_lexicon set.
+
+    """
+    from . import highlighter
+    if theme is False:
+        highlighter.SyntaxHighlighter.delete_instance(doc)
+    else:
+        if isinstance(theme, str):
+            from .theme import Theme
+            theme = Theme.byname(theme)
+        highlighter.SyntaxHighlighter.instance(doc).set_theme(theme)
+
 
