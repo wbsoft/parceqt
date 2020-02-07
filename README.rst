@@ -1,9 +1,9 @@
 parceqt
 =======
 
-Small Python library to use parce with Qt's QTextDocument
+Small Python library to use parce with Qt's QTextDocument.
 
-This module depends on parce.
+This module depends on parce (https://parce.info/)
 
 Homepage: https://github.com/wbsoft/parceqt
 Download: https://pypi.org/project/parceqt
@@ -12,18 +12,22 @@ Example:
 
 .. code:: python
 
-    from PyQt5.QtWidgets import QApplication
+    from PyQt5.QtWidgets import QApplication, QTextEdit
     from PyQt5.QtGui import QTextDocument
 
     app = QApplication([])
+    doc = QTextDocument()
+    e = QTextEdit()
+    e.setDocument(doc)
+    e.resize(600, 400)
+    e.show()
 
     import parceqt
-    import parce.lang.xml
+    from parce.lang.xml import Xml
 
-    lexicon = parce.lang.xml.Xml.root
-    doc = QTextDocument()
-    parceqt.SyntaxHighlighter.instance(doc, lexicon)
+    parceqt.set_root_lexicon(doc, Xml.root)
+    parceqt.highlight(doc)
 
-    # Now the text in the document is automatically highlighted using the
-    # specified root lexicon.
+Now the text in the document is automatically highlighted using the specified
+root lexicon; the highlighting is updated as the user types in the txt.
 
