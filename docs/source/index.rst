@@ -5,9 +5,9 @@ Small Python library to use parce with Qt's QTextDocument.
 
 This module depends on parce (https://parce.info/)
 
-|Homepage: https://github.com/wbsoft/parceqt
-|Download: https://pypi.org/project/parceqt
-|Documentation: https://parce.info/parceqt
+| Homepage: https://github.com/wbsoft/parceqt
+| Download: https://pypi.org/project/parceqt
+| Documentation: https://parce.info/parceqt
 
 Example:
 
