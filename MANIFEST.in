@@ -1,2 +1,4 @@
 include README.rst ChangeLog
 global-exclude *~
+graft docs
+prune docs/build
