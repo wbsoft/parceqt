@@ -34,8 +34,28 @@ def _color(c):
 
 
 def _font_point_size(size, unit):
-    """Return a suitable point size."""
-    # TODO: implement
+    """Return a suitable point size, where 12 is a default value."""
+    if isinstance(size, str):
+        return {
+            "xx-small": 8,
+            "x-small": 9,
+            "small": 10,
+            "medium": 12,
+            "large": 14,
+            "x-large": 16,
+            "xx-large": 12,
+            "xxx-large": 24,
+            "larger": 14,
+            "smaller": 10,
+        }.get(size, 12)
+    elif unit == "pt":
+        return size
+    elif unit == "px":
+        return size * 12 / 16
+    elif unit in ("rem", "em"):
+        return size / 12
+    elif unit == "%":
+        return size * 12 / 100
     return 12
 
 
