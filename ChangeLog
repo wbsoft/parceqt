@@ -2,6 +2,11 @@ ChangeLog of the Python parceqt package
 =======================================
 
 
+current:
+
+- API to use highlighter and set root lexicon greatly simplfied
+
+
 2020-01-22: parceqt-0.3.0
 
 - Renamed to parceqt
