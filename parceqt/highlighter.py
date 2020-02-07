@@ -19,9 +19,7 @@
 
 
 """
-This module implements a SyntaxHighlighter.
-
-
+This module provides a SyntaxHighlighter.
 """
 
 from PyQt5.QtCore import QEventLoop, QObject, Qt
@@ -31,14 +29,18 @@ import parce.util
 
 from . import treebuilder
 from . import util
+from . import theme
 
 
 class SyntaxHighlighter(util.SingleInstance):
     """Provides syntax highlighting using parce parsers.
 
-    Inherit, implement get_format() and instantiate with:
+    Instantiate with::
 
-        MyHighlighter.instance(qTextDocument, root_lexicon)
+        SyntaxHighlighter.instance(qTextDocument, root_lexicon)
+
+    By default, the default parce theme (default.css) is used.
+    Use ``set_theme()`` to set a different theme.
 
     """
     gap_start = 0
@@ -46,6 +48,7 @@ class SyntaxHighlighter(util.SingleInstance):
     changed = False
 
     def __init__(self, document, default_root_lexicon=None):
+        self._theme = theme.Theme.byname()
         builder = treebuilder.TreeBuilder.instance(document, default_root_lexicon)
         builder.updated.connect(self.slot_updated)
         builder.changed.connect(self.slot_changed)
@@ -57,6 +60,21 @@ class SyntaxHighlighter(util.SingleInstance):
         """Reimplemented to clear the highlighting before delete."""
         self.clear()
         super().delete()
+
+    def set_theme(self, theme):
+        """Set the Theme to use. The Theme provides the text formats to highlight.
+
+        If you set the theme to None, highlighting is effectively disabled,
+        although the TreeBuilder still does the tokenizing.
+
+        """
+        if theme is not self._theme:
+            self._theme = theme
+            self.rehighlight() if theme else self.clear()
+
+    def theme(self):
+        """Return the currently set Theme."""
+        return self._theme
 
     def clear(self):
         """Clear the highlighting. Do this before deleting."""
@@ -140,6 +158,9 @@ class SyntaxHighlighter(util.SingleInstance):
 
     def slot_updated(self, start, end):
         """Called on update; performs the highlighting."""
+        theme = self._theme
+        if not theme:
+            return
         if self.gap_start != self.gap_end:
             # we had interrupted our previous highlighting range, fix it now
             start = min(start, self.gap_start)
@@ -155,18 +176,17 @@ class SyntaxHighlighter(util.SingleInstance):
         formats = []
         builder = treebuilder.TreeBuilder.instance(doc)
         root = builder.root
-        for t_pos, t_end, action, language in parce.util.merge_adjacent_actions(
-                root.tokens_range(start, end)):
-            while t_pos >= pos + block.length():
+        for p in theme.property_ranges(root.tokens_range(start, end)):
+            while p.pos >= pos + block.length():
                 block.layout().setFormats(formats)
                 block = block.next()
                 pos = block.position()
                 formats = []
             r = QTextLayout.FormatRange()
-            r.format = f = self.get_format(action, language)
-            r.start = t_pos - pos
-            t_end = min(end, t_end)
-            while t_end > pos + block.length():
+            r.format = p.properties
+            r.start = p.pos - pos
+            p_end = min(end, p.end)
+            while p_end > pos + block.length():
                 r.length = block.length() - r.start - 1
                 formats.append(r)
                 block.layout().setFormats(formats)
@@ -174,9 +194,9 @@ class SyntaxHighlighter(util.SingleInstance):
                 pos = block.position()
                 formats = []
                 r = QTextLayout.FormatRange()
-                r.format = f
+                r.format = p.properties
                 r.start = 0
-            r.length = t_end - pos - r.start
+            r.length = p_end - pos - r.start
             formats.append(r)
             if block.blockNumber() > num:
                 num = block.blockNumber() + 1000
@@ -200,21 +220,4 @@ class SyntaxHighlighter(util.SingleInstance):
         self.gap_end = 0
         self.changed = False
 
-    def get_format(self, action, language):
-        """Implement this method to return a QTextCharFormat for the action."""
-        ### TEMP!
-        from PyQt5.QtGui import QFont
-        f = QTextCharFormat()
-        if action in parce.String:
-            f.setForeground(Qt.red)
-        elif action in parce.Name:
-            f.setForeground(Qt.blue)
-        if action in parce.Comment:
-            f.setForeground(Qt.darkGray)
-            f.setFontItalic(True)
-        if action in parce.Delimiter:
-            f.setFontWeight(QFont.Bold)
-        if action in parce.Escape:
-            f.setForeground(Qt.darkGreen)
-        return f
 

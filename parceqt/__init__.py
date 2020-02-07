@@ -77,17 +77,7 @@ SyntaxHighlighter
 
 The SyntaxHighlighter can live on its own and connects to the updated()
 signal of the TreeBuilder and highlights the text in the QTextDocument.
-Currently, you need to inherit from it and implement the get_format()
-method, which should return a QTextFormat for the specified action.
-
-Usage:
-
-    class MyHighlighter(SyntaxHighlighter):
-        def get_format(self, action):
-            # whatever it takes to return a QTextFormat
-            return some_QTextFormat[action]
-
-    MyHighlighter.instance(qtextdocument)
+It works out of the box, using the default parce theme.
 
 The SyntaxHighlighter is a QObject which becomes a child of the QTextDocument
 as well. To stop the highlighting, call:
@@ -98,6 +88,9 @@ or:
 
     MyHighlighter.instance(qtextdocument).delete()
 
+of just:
+
+
 """
 
 from .pkginfo import version, version_string
@@ -105,4 +98,5 @@ from .pkginfo import version, version_string
 from .treebuilder import TreeBuilder
 from .document import Document
 from .highlighter import SyntaxHighlighter
+from .theme import Theme, MetaTheme
 

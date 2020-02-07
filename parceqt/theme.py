@@ -28,6 +28,17 @@ from PyQt5.QtGui import QColor, QFont, QTextCharFormat
 import parce.theme
 
 
+class Theme(parce.theme.Theme):
+    """Theme, inheriting from parce.Theme, but using Qt text formats by default."""
+    def __init__(self, filename, factory=None):
+        """Reimplemented to use the text_format factory by default."""
+        super().__init__(filename, factory or text_format)
+
+
+class MetaTheme(Theme, parce.theme.MetaTheme):
+    """MetaTheme that uses Qt text formats by default."""
+
+
 def _color(c):
     """Convert css.Color to QColor."""
     return QColor(c.r, c.g, c.b, c.a * 255)
