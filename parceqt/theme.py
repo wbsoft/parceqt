@@ -41,7 +41,15 @@ def _font_point_size(size, unit):
 
 def _font_weight(weight):
     """Return a suitable weight."""
-    # TODO: implement
+    if isinstance(weight, str):
+        if weight == "bold":
+            return QFont.Bold
+        elif weight == "bolder":
+            return QFont.ExtraBold
+        elif weight == "lighter":
+            return QFont.Light
+    else:
+        return int(weight / 10) #TEMP
     return QFont.Medium
 
 
