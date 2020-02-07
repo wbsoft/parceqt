@@ -30,5 +30,5 @@ Example:
     parceqt.highlight(doc)
 
 Now the text in the document is automatically highlighted using the specified
-root lexicon; the highlighting is updated as the user types in the txt.
+root lexicon; the highlighting is updated as the user types in the text.
 
