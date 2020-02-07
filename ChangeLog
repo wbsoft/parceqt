@@ -2,7 +2,7 @@ ChangeLog of the Python parceqt package
 =======================================
 
 
-current:
+2020-02-07: parceqt-0.5.0
 
 - API to use highlighter and set root lexicon greatly simplfied
 
