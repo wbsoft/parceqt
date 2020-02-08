@@ -152,7 +152,10 @@ def text_format(properties):
     if p.text_decoration_color:
         f.setUnderlineColor(_color(p.text_decoration_color))
     if p.font_family:
-        f.setFontFamilies(p.font_family)
+        try:
+            f.setFontFamilies(p.font_family)
+        except AttributeError: # this property was introduced in Qt 5.13
+            f.setFontFamily(p.font_family[0])
     if p.font_size:
         f.setFontPointSize(_font_size(p.font_size, p.font_size_unit))
     if p.font_stretch:
