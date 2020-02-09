@@ -53,15 +53,45 @@ class Theme(parce.theme.Theme):
             background color the the current line
 
         """
-        f = self.default()  # QTextCharFormat
+        # all color groups
         p = QGuiApplication.palette()
-        p.setColor(QPalette.Text, f.foreground().color())
-        p.setColor(QPalette.Base, f.background().color())
+        f = self.default()  # QTextCharFormat
+        if f:
+            p.setColor(QPalette.Text, f.foreground().color())
+            p.setColor(QPalette.Base, f.background().color())
         f = self.selection()
-        p.setColor(QPalette.HighlightedText, f.foreground().color())
-        p.setColor(QPalette.Highlight, f.background().color())
+        if f:
+            p.setColor(QPalette.HighlightedText, f.foreground().color())
+            p.setColor(QPalette.Highlight, f.background().color())
         f = self.currentline()
-        p.setColor(QPalette.AlternateBase, f.background().color())
+        if f:
+            p.setColor(QPalette.AlternateBase, f.background().color())
+
+        # Active color group
+        f = self.default("focus")
+        if f:
+            p.setColor(QPalette.Active, QPalette.Text, f.foreground().color())
+            p.setColor(QPalette.Active, QPalette.Base, f.background().color())
+        f = self.selection("focus")
+        if f:
+            p.setColor(QPalette.Active, QPalette.HighlightedText, f.foreground().color())
+            p.setColor(QPalette.Active, QPalette.Highlight, f.background().color())
+        f = self.currentline("focus")
+        if f:
+            p.setColor(QPalette.Active, QPalette.AlternateBase, f.background().color())
+
+        # Disabled color group
+        f = self.default("disabled")
+        if f:
+            p.setColor(QPalette.Disabled, QPalette.Text, f.foreground().color())
+            p.setColor(QPalette.Disabled, QPalette.Base, f.background().color())
+        f = self.selection("disabled")
+        if f:
+            p.setColor(QPalette.Disabled, QPalette.HighlightedText, f.foreground().color())
+            p.setColor(QPalette.Disabled, QPalette.Highlight, f.background().color())
+        f = self.currentline("disabled")
+        if f:
+            p.setColor(QPalette.Disabled, QPalette.AlternateBase, f.background().color())
         return p
 
 
