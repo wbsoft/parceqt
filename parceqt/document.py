@@ -41,7 +41,19 @@ class Document(TreeDocumentMixin, AbstractDocument):
     """Document accesses a QTextDocument via the parce.Document API.
 
     There is no need to store this object, it is only used to access and
-    modify a QTextDocument.
+    modify the contents of a QTextDocument. Example::
+
+        d = Document(doc)   # where doc is an existing QTextDocument
+        with d:
+            d[5:5] = 'some text'
+
+    This is useful when you have written code that manipulates text files based
+    on the tokenized tree via the parce.Document API, you can use the same code
+    to manipulate QTextDocuments in an interactive session.
+
+    As opposed to parce.Document, this Document class does not update the token
+    tree by itself, that is handled by the TreeBuilder that does its work in
+    the background.
 
     """
     def __init__(self, document):

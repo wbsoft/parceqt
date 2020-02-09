@@ -29,11 +29,22 @@ QTextDocument using parce.
 
 """
 
+__all__ = (
+    'Document',
+    'Theme',
+    'MetaTheme',
+    'root',
+    'set_root_lexicon',
+    'root_lexicon',
+    'highlight',
+    'adjust_widget',
+)
 
 from PyQt5.QtWidgets import QApplication
 
 from .pkginfo import version, version_string
 from .document import Document
+from .theme import Theme, MetaTheme
 
 
 def builder(doc):
@@ -82,7 +93,6 @@ def highlight(doc, theme="default"):
         highlighter.SyntaxHighlighter.delete_instance(doc)
     else:
         if isinstance(theme, str):
-            from .theme import Theme
             theme = Theme.byname(theme)
         highlighter.SyntaxHighlighter.instance(doc).set_theme(theme)
 
