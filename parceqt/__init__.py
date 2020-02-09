@@ -98,10 +98,24 @@ def highlight(doc, theme="default"):
 
 
 def adjust_widget(w):
-    """Set the widget's palette and font to the theme of its QTextDocument's highlighter.
+    """Convenience function to set palette and font of a text editing widget.
+
+    Sets the widget's palette and font to the theme of its QTextDocument's
+    highlighter.
 
     The widget must be a QPlainTextEdit, QTextEdit or QTextBrowser. If its
     document has not yet a theme set, this function does nothing.
+
+    Basically this is as simple as::
+
+        widget.setFont(theme.font())
+        widget.setPalette(theme.palette())
+
+    but this function is useful when you just set the theme once to a document
+    and want to have its editing widget adjusted.
+
+    Also, when you stopped the highlighting, this function neatly switches the
+    widget back to the default palette and font.
 
     """
     doc = w.document()
@@ -115,6 +129,7 @@ def adjust_widget(w):
                 w.setFont(font)
             w.setPalette(theme.palette())
         else:
-            w.setPalette(QApplication.palette())
+            w.setFont(QApplication.font(w))
+            w.setPalette(QApplication.palette(w))
 
 

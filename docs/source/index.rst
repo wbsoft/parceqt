@@ -30,7 +30,7 @@ Example:
     parceqt.highlight(doc)
 
 Now the text in the document is automatically highlighted using the specified
-root lexicon; the highlighting is updated as the user types in the text.
+root lexicon; the highlighting is updated as the user modifies the text.
 
 .. toctree::
    :maxdepth: 2

@@ -41,16 +41,19 @@ class Theme(parce.theme.Theme):
     def palette(self):
         """Return a QPalette with the following colors set:
 
-        QPalette.Text
-            default foreground color
-        QPalette.Base
-            default background color
-        QPalette.HighlightText
-            selection foreground color
-        QPalette.Highlight
-            selection background color
-        QPalette.AlternateBase
-            background color the the current line
+            ``QPalette.Text``
+                default foreground color
+            ``QPalette.Base``
+                default background color
+            ``QPalette.HighlightText``
+                selection foreground color
+            ``QPalette.Highlight``
+                selection background color
+            ``QPalette.AlternateBase``
+                background color for the current line
+
+        If the theme supports it, the Inactive and Disabled color groups are
+        set to their own colors. Otherwise, they just use the same colors.
 
         """
         # all color groups
