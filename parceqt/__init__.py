@@ -29,6 +29,9 @@ QTextDocument using parce.
 
 """
 
+
+from PyQt5.QtWidgets import QApplication
+
 from .pkginfo import version, version_string
 from .document import Document
 
@@ -82,5 +85,26 @@ def highlight(doc, theme="default"):
             from .theme import Theme
             theme = Theme.byname(theme)
         highlighter.SyntaxHighlighter.instance(doc).set_theme(theme)
+
+
+def adjust_widget(w):
+    """Set the widget's palette and font to the theme of its QTextDocument's highlighter.
+
+    The widget must be a QPlainTextEdit, QTextEdit or QTextBrowser. If its
+    document has not yet a theme set, this function does nothing.
+
+    """
+    doc = w.document()
+    from . import highlighter
+    h = highlighter.SyntaxHighlighter.get_instance(doc)
+    if h:
+        theme = h.theme()
+        if theme:
+            font = theme.font()
+            if font:
+                w.setFont(font)
+            w.setPalette(theme.palette())
+        else:
+            w.setPalette(QApplication.palette())
 
 

@@ -57,6 +57,14 @@ class SingleInstance:
         else:
             instance.delete()
 
+    @classmethod
+    def get_instance(cls, obj):
+        """Return the instance if it already exists, else returns None."""
+        try:
+            return cls._instances[obj]
+        except (AttributeError, KeyError):
+            pass
+
     def target_object(self):
         """Return the object we are stored for."""
         return self._target()
