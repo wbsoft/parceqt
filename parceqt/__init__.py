@@ -38,6 +38,7 @@ __all__ = (
     'root_lexicon',
     'highlight',
     'adjust_widget',
+    'cursor',
 )
 
 from PyQt5.QtWidgets import QApplication
@@ -131,5 +132,20 @@ def adjust_widget(w):
         else:
             w.setFont(QApplication.font(w))
             w.setPalette(QApplication.palette(w))
+
+
+def cursor(cur):
+    """Convenience function to return a Cursor for a Document that wraps a QTextDocument.
+
+    You can alter the document via the parce.Document API.
+    The returned Cursor has a textCursor() method that returns a QTextCursor
+    for the same selection or position.
+
+    """
+    from .document import Cursor
+    c = Cursor(Document(cur.document()))
+    c.start = cur.selectionStart()
+    c.end = cur.selectionEnd()
+    return c
 
 

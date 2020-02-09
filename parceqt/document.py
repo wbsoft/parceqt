@@ -31,13 +31,14 @@ that is automatically connected to the document.
 
 from PyQt5.QtGui import QTextCursor
 
-from parce.treedocument import TreeDocumentMixin
-from parce.document import AbstractDocument
+import parce.treedocument
+import parce.document
 
 from . import treebuilder
 
 
-class Document(TreeDocumentMixin, AbstractDocument):
+class Document(
+    parce.treedocument.TreeDocumentMixin, parce.document.AbstractDocument):
     """Document accesses a QTextDocument via the parce.Document API.
 
     There is no need to store this object, it is only used to access and
@@ -58,7 +59,7 @@ class Document(TreeDocumentMixin, AbstractDocument):
     """
     def __init__(self, document):
         """Initialize with QTextDocument."""
-        AbstractDocument.__init__(self)
+        parce.document.AbstractDocument.__init__(self)
         self._document = document
 
     def document(self):
@@ -111,4 +112,21 @@ class Document(TreeDocumentMixin, AbstractDocument):
         """Set the root lexicon to use to tokenize the text. Triggers a rebuild."""
         builder = treebuilder.TreeBuilder.instance(self.document())
         builder.set_root_lexicon(root_lexicon)
+
+
+class Cursor(parce.document.Cursor):
+    """A cursor with a textCursor() method to return a QTextCursor.
+
+    Only use this Cursor with parceqt.Document.
+
+    """
+    def textCursor(self):
+        c = QTextCursor(self.document().document())
+        if self.end is None:
+            c.movePosition(QTextCursor.End)
+        else:
+            c.setPosition(self.end)
+        c.setPosition(self.start, QTextCursor.KeepAnchor)
+        return c
+
 
