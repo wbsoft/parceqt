@@ -53,8 +53,8 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
     updates the tokens when the document changes.
 
     """
-    updated = pyqtSignal(int, int)  # emitted when one full run finished
-    changed = pyqtSignal(int, int)  # emitted when a contents change falls in one block
+    updated = pyqtSignal(int, int)  #: emitted when one full run finished
+    changed = pyqtSignal(int, int)  #: emitted when a contents change falls in one block
 
     def __init__(self, document, root_lexicon=None):
         QObject.__init__(self, document)
