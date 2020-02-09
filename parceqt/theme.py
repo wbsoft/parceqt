@@ -157,7 +157,7 @@ def text_format(properties):
         except AttributeError: # this property was introduced in Qt 5.13
             f.setFontFamily(p.font_family[0])
     if p.font_size:
-        f.setFontPointSize(_font_size(p.font_size, p.font_size_unit))
+        f.setFontPointSize(_font_point_size(p.font_size, p.font_size_unit))
     if p.font_stretch:
         f.setFontStretch(_font_stretch(p.font_stretch))
     if p.font_style in ('italic', 'oblique'):
