@@ -1,5 +1,5 @@
 The theme module
-===============
+================
 
 .. automodule:: parceqt.theme
     :members:
