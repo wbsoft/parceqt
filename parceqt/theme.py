@@ -23,7 +23,7 @@ Use parce.theme.Theme with QTextCharFormat.
 """
 
 
-from PyQt5.QtGui import QColor, QFont, QTextCharFormat
+from PyQt5.QtGui import QColor, QFont, QGuiApplication, QPalette, QTextCharFormat
 
 import parce.theme
 
@@ -33,6 +33,36 @@ class Theme(parce.theme.Theme):
     def __init__(self, filename, factory=None):
         """Reimplemented to use the text_format factory by default."""
         super().__init__(filename, factory or text_format)
+
+    def font(self):
+        """Return the font of the default text format."""
+        return self.default().font()
+
+    def palette(self):
+        """Return a QPalette with the following colors set:
+
+        QPalette.Text
+            default foreground color
+        QPalette.Base
+            default background color
+        QPalette.HighlightText
+            selection foreground color
+        QPalette.Highlight
+            selection background color
+        QPalette.AlternateBase
+            background color the the current line
+
+        """
+        f = self.default()  # QTextCharFormat
+        p = QGuiApplication.palette()
+        p.setColor(QPalette.Text, f.foreground().color())
+        p.setColor(QPalette.Base, f.background().color())
+        f = self.selection()
+        p.setColor(QPalette.HighlightedText, f.foreground().color())
+        p.setColor(QPalette.Highlight, f.background().color())
+        f = self.currentline()
+        p.setColor(QPalette.AlternateBase, f.background().color())
+        return p
 
 
 class MetaTheme(Theme, parce.theme.MetaTheme):
