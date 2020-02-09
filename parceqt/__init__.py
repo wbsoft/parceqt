@@ -33,12 +33,15 @@ __all__ = (
     'Document',
     'Theme',
     'MetaTheme',
+    'builder',
     'root',
     'set_root_lexicon',
     'root_lexicon',
     'highlight',
     'adjust_widget',
     'cursor',
+    'version',
+    'version_string',
 )
 
 from PyQt5.QtWidgets import QApplication
