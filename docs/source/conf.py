@@ -112,6 +112,7 @@ html_theme_options = {
     'github_user': 'wbsoft',
     'github_repo': 'parceqt',
     'show_related': 'true',
+    'show_relbar_bottom': 'true',
     'description': parceqt.pkginfo.description,
     'extra_nav_links': {
         'parceqt@Github': 'https://github.com/wbsoft/parceqt',
