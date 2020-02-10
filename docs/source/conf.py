@@ -113,6 +113,11 @@ html_theme_options = {
     'github_repo': 'parceqt',
     'show_related': 'true',
     'description': parceqt.pkginfo.description,
+    'extra_nav_links': {
+        'parceqt@Github': 'https://github.com/wbsoft/parceqt',
+        'parceqt@PyPi': 'https://pypi.org/project/parceqt',
+        'Main parce docs': 'https://parce.info/',
+    },
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
