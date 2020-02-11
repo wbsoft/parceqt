@@ -40,7 +40,7 @@ root lexicon; the highlighting is updated as the user modifies the text.
    document.rst
    treebuilder.rst
    highlighter.rst
-   theme.rst
+   formatter.rst
    util.rst
 
 

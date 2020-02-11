@@ -26,10 +26,11 @@ from PyQt5.QtCore import QEventLoop, QObject, Qt
 from PyQt5.QtGui import QGuiApplication, QTextCharFormat, QTextLayout
 
 import parce.util
+import parce.theme
 
 from . import treebuilder
 from . import util
-from . import theme
+from . import formatter
 
 
 class SyntaxHighlighter(util.SingleInstance):
@@ -48,7 +49,8 @@ class SyntaxHighlighter(util.SingleInstance):
     changed = False
 
     def __init__(self, document, default_root_lexicon=None):
-        self._theme = theme.Theme.byname()
+        self._formatter = None
+        self.set_theme(parce.theme.Theme.byname())
         builder = treebuilder.TreeBuilder.instance(document, default_root_lexicon)
         builder.updated.connect(self.slot_updated)
         builder.changed.connect(self.slot_changed)
@@ -68,13 +70,14 @@ class SyntaxHighlighter(util.SingleInstance):
         although the TreeBuilder still does the tokenizing.
 
         """
-        if theme is not self._theme:
-            self._theme = theme
+        if theme is not self.theme():
+            self._formatter = formatter.Formatter(theme) if theme else None
             self.rehighlight() if theme else self.clear()
 
     def theme(self):
         """Return the currently set Theme."""
-        return self._theme
+        if self._formatter:
+            return self._formatter.theme()
 
     def clear(self):
         """Clear the highlighting. Do this before deleting."""
@@ -158,8 +161,8 @@ class SyntaxHighlighter(util.SingleInstance):
 
     def slot_updated(self, start, end):
         """Called on update; performs the highlighting."""
-        theme = self._theme
-        if not theme:
+        formatter = self._formatter
+        if not formatter:
             return
         if self.gap_start != self.gap_end:
             # we had interrupted our previous highlighting range, fix it now
@@ -176,17 +179,17 @@ class SyntaxHighlighter(util.SingleInstance):
         formats = []
         builder = treebuilder.TreeBuilder.instance(doc)
         root = builder.root
-        for p in theme.property_ranges(root.tokens_range(start, end)):
-            while p.pos >= pos + block.length():
+        for f in formatter.format_ranges(root.tokens_range(start, end)):
+            while f.pos >= pos + block.length():
                 block.layout().setFormats(formats)
                 block = block.next()
                 pos = block.position()
                 formats = []
             r = QTextLayout.FormatRange()
-            r.format = p.properties
-            r.start = p.pos - pos
-            p_end = min(end, p.end)
-            while p_end > pos + block.length():
+            r.format = f.textformat
+            r.start = f.pos - pos
+            f_end = min(end, f.end)
+            while f_end > pos + block.length():
                 r.length = block.length() - r.start - 1
                 formats.append(r)
                 block.layout().setFormats(formats)
@@ -194,9 +197,9 @@ class SyntaxHighlighter(util.SingleInstance):
                 pos = block.position()
                 formats = []
                 r = QTextLayout.FormatRange()
-                r.format = p.properties
+                r.format = f.textformat
                 r.start = 0
-            r.length = p_end - pos - r.start
+            r.length = f_end - pos - r.start
             formats.append(r)
             if block.blockNumber() > num:
                 num = block.blockNumber() + 1000

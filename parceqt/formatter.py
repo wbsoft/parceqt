@@ -19,7 +19,7 @@
 
 
 """
-Use parce.theme.Theme with QTextCharFormat.
+A Formatter that uses parce.theme.Theme with QTextCharFormat.
 """
 
 
@@ -28,15 +28,15 @@ from PyQt5.QtGui import QColor, QFont, QGuiApplication, QPalette, QTextCharForma
 import parce.theme
 
 
-class Theme(parce.theme.Theme):
-    """Theme, inheriting from parce.Theme, but using Qt text formats by default."""
-    def __init__(self, filename, factory=None):
+class Formatter(parce.theme.Formatter):
+    """Formatter, inheriting from parce.Formatter, but using Qt text formats by default."""
+    def __init__(self, theme, factory=None):
         """Reimplemented to use the text_format factory by default."""
-        super().__init__(filename, factory or text_format)
+        super().__init__(theme, factory or text_format)
 
     def font(self):
         """Return the font of the default text format."""
-        return self.default().font()
+        return self.window().font()
 
     def palette(self):
         """Return a QPalette with the following colors set:
@@ -58,7 +58,7 @@ class Theme(parce.theme.Theme):
         """
         # all color groups
         p = QGuiApplication.palette()
-        f = self.default()  # QTextCharFormat
+        f = self.window()  # QTextCharFormat
         if f:
             p.setColor(QPalette.Text, f.foreground().color())
             p.setColor(QPalette.Base, f.background().color())
@@ -71,7 +71,7 @@ class Theme(parce.theme.Theme):
             p.setColor(QPalette.AlternateBase, f.background().color())
 
         # Active color group
-        f = self.default("focus")
+        f = self.window("focus")
         if f:
             p.setColor(QPalette.Active, QPalette.Text, f.foreground().color())
             p.setColor(QPalette.Active, QPalette.Base, f.background().color())
@@ -84,7 +84,7 @@ class Theme(parce.theme.Theme):
             p.setColor(QPalette.Active, QPalette.AlternateBase, f.background().color())
 
         # Disabled color group
-        f = self.default("disabled")
+        f = self.window("disabled")
         if f:
             p.setColor(QPalette.Disabled, QPalette.Text, f.foreground().color())
             p.setColor(QPalette.Disabled, QPalette.Base, f.background().color())
@@ -96,10 +96,6 @@ class Theme(parce.theme.Theme):
         if f:
             p.setColor(QPalette.Disabled, QPalette.AlternateBase, f.background().color())
         return p
-
-
-class MetaTheme(Theme, parce.theme.MetaTheme):
-    """MetaTheme that uses Qt text formats by default."""
 
 
 def _color(c):
@@ -181,54 +177,54 @@ def _font_weight(weight):
     return QFont.Normal
 
 
-def text_format(properties):
-    """A Factory to be used with parce.theme.Theme.
+def text_format(tf):
+    """A factory to be used with parce.theme.Formatter.
 
-    Creates a QTextCharFormat for the css properties.
+    Creates a QTextCharFormat for the specified TextFormat object.
 
     """
-    f = QTextCharFormat()
-    p = parce.theme.TextFormat(properties)
-    if p.color:
-        f.setForeground(_color(p.color))
-    if p.background_color:
-        f.setBackground(_color(p.background_color))
-    if p.text_decoration_line:
-        if 'underline' in p.text_decoration_line:
-            f.setFontUnderline(True)
-        if 'overline' in p.text_decoration_line:
-            f.setFontOverline(True)
-        if 'line-through' in p.text_decoration_line:
-            f.setFontStrikeOut(True)
-    if p.text_decoration_style:
-        s = p.text_decoration_style
-        if s == "solid":
-            f.setUnderlineStyle(QTextCharFormat.SingleUnderline)
-        #elif s == "double":
-        #    pass # Seems Qt5 does not provide this
-        elif s == "dotted":
-            f.setUnderlineStyle(QTextCharFormat.DotLine)
-        elif s == "dashed":
-            f.setUnderlineStyle(QTextCharFormat.DashUnderline)
-        elif s == "wavy":
-            f.setUnderlineStyle(QTextCharFormat.WaveUnderline)
-    if p.text_decoration_color:
-        f.setUnderlineColor(_color(p.text_decoration_color))
-    if p.font_family:
-        try:
-            f.setFontFamilies(p.font_family)
-        except AttributeError: # this property was introduced in Qt 5.13
-            f.setFontFamily(p.font_family[0])
-    if p.font_size:
-        f.setFontPointSize(_font_point_size(p.font_size, p.font_size_unit))
-    if p.font_stretch:
-        f.setFontStretch(_font_stretch(p.font_stretch))
-    if p.font_style in ('italic', 'oblique'):
-        f.setFontItalic(True)
-    if p.font_variant_caps == "small-caps":
-        f.setFontCapitalization(QFont.SmallCaps)
-    if p.font_weight:
-        f.setFontWeight(_font_weight(p.font_weight))
-    if not f.isEmpty():
-        return f
+    if tf:
+        f = QTextCharFormat()
+        if tf.color:
+            f.setForeground(_color(tf.color))
+        if tf.background_color:
+            f.setBackground(_color(tf.background_color))
+        if tf.text_decoration_line:
+            if 'underline' in tf.text_decoration_line:
+                f.setFontUnderline(True)
+            if 'overline' in tf.text_decoration_line:
+                f.setFontOverline(True)
+            if 'line-through' in tf.text_decoration_line:
+                f.setFontStrikeOut(True)
+        if tf.text_decoration_style:
+            s = tf.text_decoration_style
+            if s == "solid":
+                f.setUnderlineStyle(QTextCharFormat.SingleUnderline)
+            #elif s == "double":
+            #    pass # Seems Qt5 does not provide this
+            elif s == "dotted":
+                f.setUnderlineStyle(QTextCharFormat.DotLine)
+            elif s == "dashed":
+                f.setUnderlineStyle(QTextCharFormat.DashUnderline)
+            elif s == "wavy":
+                f.setUnderlineStyle(QTextCharFormat.WaveUnderline)
+        if tf.text_decoration_color:
+            f.setUnderlineColor(_color(tf.text_decoration_color))
+        if tf.font_family:
+            try:
+                f.setFontFamilies(tf.font_family)
+            except AttributeError: # this property was introduced in Qt 5.13
+                f.setFontFamily(tf.font_family[0])
+        if tf.font_size:
+            f.setFontPointSize(_font_point_size(tf.font_size, tf.font_size_unit))
+        if tf.font_stretch:
+            f.setFontStretch(_font_stretch(tf.font_stretch))
+        if tf.font_style in ('italic', 'oblique'):
+            f.setFontItalic(True)
+        if tf.font_variant_caps == "small-caps":
+            f.setFontCapitalization(QFont.SmallCaps)
+        if tf.font_weight:
+            f.setFontWeight(_font_weight(tf.font_weight))
+        if not f.isEmpty():
+            return f
 

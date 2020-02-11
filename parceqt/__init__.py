@@ -46,9 +46,11 @@ __all__ = (
 
 from PyQt5.QtWidgets import QApplication
 
+import parce.theme
+
 from .pkginfo import version, version_string
 from .document import Document
-from .theme import Theme, MetaTheme
+from .formatter import Formatter
 
 
 def builder(doc):
@@ -61,6 +63,7 @@ def builder(doc):
     """
     from . import treebuilder
     return treebuilder.TreeBuilder.instance(doc)
+
 
 def root(doc, wait=False, callback=None, args=None, kwargs=None):
     """Get the root element of the tokenized tree of specified text document.
@@ -97,7 +100,7 @@ def highlight(doc, theme="default"):
         highlighter.SyntaxHighlighter.delete_instance(doc)
     else:
         if isinstance(theme, str):
-            theme = Theme.byname(theme)
+            theme = parce.theme.Theme.byname(theme)
         highlighter.SyntaxHighlighter.instance(doc).set_theme(theme)
 
 
@@ -128,10 +131,11 @@ def adjust_widget(w):
     if h:
         theme = h.theme()
         if theme:
-            font = theme.font()
+            f = Formatter(theme)
+            font = f.font()
             if font:
                 w.setFont(font)
-            w.setPalette(theme.palette())
+            w.setPalette(f.palette())
         else:
             w.setFont(QApplication.font(w))
             w.setPalette(QApplication.palette(w))
