@@ -31,8 +31,7 @@ QTextDocument using parce.
 
 __all__ = (
     'Document',
-    'Theme',
-    'MetaTheme',
+    'Formatter',
     'builder',
     'root',
     'set_root_lexicon',

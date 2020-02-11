@@ -1,7 +1,7 @@
-The theme module
-================
+The formatter module
+====================
 
-.. automodule:: parceqt.theme
+.. automodule:: parceqt.formatter
     :members:
     :undoc-members:
     :show-inheritance:
