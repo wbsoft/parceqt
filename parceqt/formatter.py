@@ -25,10 +25,10 @@ A Formatter that uses parce.theme.Theme with QTextCharFormat.
 
 from PyQt5.QtGui import QColor, QFont, QGuiApplication, QPalette, QTextCharFormat
 
-import parce.theme
+import parce.formatter
 
 
-class Formatter(parce.theme.Formatter):
+class Formatter(parce.formatter.Formatter):
     """Formatter, inheriting from parce.Formatter, but using Qt text formats by default."""
     def __init__(self, theme, factory=None):
         """Reimplemented to use the text_format factory by default."""
