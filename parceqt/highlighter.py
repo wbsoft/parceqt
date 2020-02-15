@@ -179,7 +179,7 @@ class SyntaxHighlighter(util.SingleInstance):
         formats = []
         builder = treebuilder.TreeBuilder.instance(doc)
         root = builder.root
-        for f in formatter.format_ranges(root.tokens_range(start, end)):
+        for f in formatter.format_ranges(root.context_slices(start, end)):
             while f.pos >= pos + block.length():
                 block.layout().setFormats(formats)
                 block = block.next()
