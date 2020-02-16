@@ -1,4 +1,4 @@
-include README.rst ChangeLog
+include README.rst ChangeLog LICENSE
 global-exclude *~
 graft docs
 prune docs/build

@@ -2,6 +2,13 @@ ChangeLog of the Python parceqt package
 =======================================
 
 
+2020-02-16: parceqt-0.6.0
+
+- Improvements, and adjust to changes in parceqt-0.6
+- Convenience function to adjust a text widget to the window() format
+  of a theme.
+
+
 2020-02-07: parceqt-0.5.0
 
 - API to use highlighter and set root lexicon greatly simplfied
