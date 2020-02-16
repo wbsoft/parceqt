@@ -9,6 +9,8 @@ This module depends on parce (https://parce.info/)
 | Download: https://pypi.org/project/parceqt
 | Documentation: https://parce.info/parceqt
 
+This manual documents version |release|.
+
 Example:
 
 .. code:: python
