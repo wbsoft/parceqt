@@ -1,6 +1,12 @@
 ChangeLog of the Python parceqt package
 =======================================
 
+current:
+
+- don't set a default Theme on init of SyntaxHighlighter, this causes
+  the highlighting to run twice when calling the highlight() helper.
+- really wait til update on Treebuilder.wait()
+
 
 2020-02-16: parceqt-0.6.0
 
