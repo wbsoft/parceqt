@@ -1,7 +1,8 @@
 ChangeLog of the Python parceqt package
 =======================================
 
-current:
+
+2020-03-14: parceqt-0.7.0
 
 - don't set a default Theme on init of SyntaxHighlighter, this causes
   the highlighting to run twice when calling the highlight() helper.
