@@ -53,6 +53,7 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
     updates the tokens when the document changes.
 
     """
+    started = pyqtSignal()          #: emitted when a new update job started
     updated = pyqtSignal(int, int)  #: emitted when one full run finished
     changed = pyqtSignal(int, int)  #: emitted when a contents change falls in one block
 
@@ -75,6 +76,7 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
             j = self.job = Job(self)
             j.finished.connect(self.finish_processing)
             j.start()
+            self.started.emit()
 
     def build_updated(self):
         """Reimplemented to emit the updated() signal."""
