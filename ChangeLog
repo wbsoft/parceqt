@@ -2,6 +2,11 @@ ChangeLog of the Python parceqt package
 =======================================
 
 
+current:
+
+- added treemodel.TreeModel
+
+
 2020-02-16: parceqt-0.6.0
 
 - Improvements, and adjust to changes in parceqt-0.6
