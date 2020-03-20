@@ -40,8 +40,8 @@ class SyntaxHighlighter(util.SingleInstance):
 
         SyntaxHighlighter.instance(qTextDocument, root_lexicon)
 
-    By default, the default parce theme (default.css) is used.
-    Use ``set_theme()`` to set a different theme.
+    By default, no theme is set; use ``set_theme()`` to set a theme, which is
+    needed to enable highlighting.
 
     """
     gap_start = 0
@@ -50,13 +50,10 @@ class SyntaxHighlighter(util.SingleInstance):
 
     def __init__(self, document, default_root_lexicon=None):
         self._formatter = None
-        self.set_theme(parce.theme.Theme.byname())
         builder = treebuilder.TreeBuilder.instance(document, default_root_lexicon)
         builder.updated.connect(self.slot_updated)
         builder.changed.connect(self.slot_changed)
         document.contentsChange.connect(self.slot_contents_change)
-        if builder.get_root():
-            self.rehighlight()
 
     def delete(self):
         """Reimplemented to clear the highlighting before delete."""

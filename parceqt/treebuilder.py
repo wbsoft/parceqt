@@ -86,11 +86,11 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
     def wait(self):
         """Wait for completion if a background job is running."""
         job = self.job
-        if job and job.isRunning():
+        if job:
             # we can't simply job.wait() because signals that are executed
             # in the main thread would then deadlock.
             loop = QEventLoop()
-            job.finished.connect(loop.quit)
+            self.updated.connect(loop.quit)
             loop.exec_()
 
     def root_lexicon(self):
