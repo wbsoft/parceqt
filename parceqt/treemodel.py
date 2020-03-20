@@ -29,10 +29,26 @@ from PyQt5.QtCore import QAbstractItemModel, QModelIndex, Qt
 
 
 class TreeModel(QAbstractItemModel):
+    """TreeModel implements QAbstractItemModel to show a parce tree in
+    Qt widgets such as a QTreeView.
+
+    """
     def __init__(self, tree, parent=None):
         super().__init__(parent)
         self._root = tree
 
+    @classmethod
+    def from_builder(cls, builder):
+        """Instantiate a TreeModel that keeps itselves updated whenever
+        the specified parceqt TreeBuilder updates.
+
+        """
+        model = cls(builder.root)
+        builder.started.connect(model.beginResetModel)
+        builder.updated.connect(model.endResetModel)
+        return model
+
+    ## reimplemented virtual methods
     def index(self, row, column, parent):
         if self.hasIndex(row, column, parent):
             node = parent.internalPointer() if parent.isValid() else self._root
@@ -61,3 +77,18 @@ class TreeModel(QAbstractItemModel):
         if role == Qt.DisplayRole and index.isValid():
             node = index.internalPointer()
             return repr(node)
+
+    def headerData(self, column, orientation, role):
+        if column == 0 and orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return repr(self._root)
+
+    ## own methods
+    def get_model_index(self, node):
+        """Return a QModelIndex for the specified node (Context or Token)."""
+        return self.createIndex(node.parent_index(), 0, node)
+
+    def get_node(self, index):
+        """Return the node (Context or Token) for the specified QModelIndex."""
+        return index.internalPointer() if index.isValid() else self._root
+
+
