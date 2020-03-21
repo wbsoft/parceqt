@@ -35,6 +35,7 @@ class TreeModel(QAbstractItemModel):
     """
     def __init__(self, tree, parent=None):
         super().__init__(parent)
+        self._reset_in_progress = False
         self._root = tree
 
     @classmethod
@@ -44,8 +45,8 @@ class TreeModel(QAbstractItemModel):
 
         """
         model = cls(builder.root)
-        builder.started.connect(model.beginResetModel)
-        builder.updated.connect(model.endResetModel)
+        builder.started.connect(model.slot_build_started)
+        builder.updated.connect(model.slot_build_finished)
         return model
 
     ## reimplemented virtual methods
@@ -79,8 +80,12 @@ class TreeModel(QAbstractItemModel):
             return repr(node)
 
     def headerData(self, column, orientation, role):
-        if column == 0 and orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return repr(self._root)
+        """Reimplemented to not show the root element's repr while busy."""
+        if not self._reset_in_progress:
+            if column == 0 and orientation == Qt.Horizontal and role == Qt.DisplayRole:
+                return repr(self._root)
+        else:
+            return "..."    # busy indicator
 
     ## own methods
     def get_model_index(self, node):
@@ -90,5 +95,13 @@ class TreeModel(QAbstractItemModel):
     def get_node(self, index):
         """Return the node (Context or Token) for the specified QModelIndex."""
         return index.internalPointer() if index.isValid() else self._root
+
+    def slot_build_started(self):
+        self._reset_in_progress = True
+        self.beginResetModel()
+
+    def slot_build_finished(self):
+        self._reset_in_progress = False
+        self.endResetModel()
 
 
