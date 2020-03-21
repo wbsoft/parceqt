@@ -63,8 +63,7 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
         document.contentsChange.connect(self.slot_contents_change)
         text = document.toPlainText()
         if text:
-            with self.change() as c:
-                c.change_contents(text)
+            self.change_text(text)
 
     def document(self):
         """Return the QTextDocument, which is our parent."""
@@ -77,6 +76,12 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
             j.finished.connect(self.finish_processing)
             j.start()
             self.started.emit()
+
+    def finish_processing(self):
+        """Reimplemented to run again if there are new changes."""
+        super().finish_processing()
+        if self.changes and not self._incontext:
+            self.start_processing()
 
     def build_updated(self):
         """Reimplemented to emit the updated() signal."""
@@ -92,19 +97,14 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
             loop = QEventLoop()
             self.updated.connect(loop.quit)
             loop.exec_()
-
-    def root_lexicon(self):
-        """Return the currently (being) set root lexicon."""
-        c = self.changes
-        if c and c.root_lexicon != False:
-            return c.root_lexicon
-        return self.root.lexicon
+            # there might be already new changes... wait for them
+            while self.job or self.changes: # whichever is first ;-)
+                loop.exec_()
 
     def set_root_lexicon(self, root_lexicon):
         """Set the root lexicon to use to tokenize the text. Triggers a rebuild."""
         if root_lexicon != self.root_lexicon():
-            with self.change() as c:
-                c.change_root_lexicon(self.document().toPlainText(), root_lexicon)
+            self.change_root_lexicon(self.document().toPlainText(), root_lexicon)
 
     def slot_contents_change(self, start, removed, added):
         """Called after modification of the text, retokenizes the modified part."""
@@ -120,7 +120,6 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
             else:
                 # formats need to be cleared from start
                 self.changed.emit(start, 0)
-        with self.change() as c:
-            c.change_contents(doc.toPlainText(), start, removed, added)
+        self.change_text(doc.toPlainText(), start, removed, added)
 
 
