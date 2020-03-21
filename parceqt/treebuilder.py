@@ -73,9 +73,9 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
         """Start a background job if needed."""
         if not self.job:
             j = self.job = Job(self)
+            j.started.connect(self.started)
             j.finished.connect(self.finish_processing)
             j.start()
-            self.started.emit()
 
     def finish_processing(self):
         """Reimplemented to run again if there are new changes."""
