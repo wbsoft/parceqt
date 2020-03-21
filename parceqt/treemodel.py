@@ -81,11 +81,8 @@ class TreeModel(QAbstractItemModel):
 
     def headerData(self, column, orientation, role):
         """Reimplemented to not show the root element's repr while busy."""
-        if not self._reset_in_progress:
-            if column == 0 and orientation == Qt.Horizontal and role == Qt.DisplayRole:
-                return repr(self._root)
-        else:
-            return "..."    # busy indicator
+        if column == 0 and orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return repr(self._root) if not self._reset_in_progress else "..." # busy indicator
 
     ## own methods
     def get_model_index(self, node):
@@ -97,10 +94,12 @@ class TreeModel(QAbstractItemModel):
         return index.internalPointer() if index.isValid() else self._root
 
     def slot_build_started(self):
+        """Called when tree builder starts."""
         self._reset_in_progress = True
         self.beginResetModel()
 
     def slot_build_finished(self):
+        """Called when tree builder has finished."""
         self._reset_in_progress = False
         self.endResetModel()
 
