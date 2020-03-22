@@ -13,6 +13,7 @@ This manual documents version |release|.
    formatter.rst
    util.rst
    treemodel.rst
+   debug.rst
 
 
 Indices and tables
