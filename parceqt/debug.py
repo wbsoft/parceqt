@@ -26,8 +26,8 @@ This module provides a debug window to show/edit text and the tokenized tree.
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QTextCursor, QTextDocument
 from PyQt5.QtWidgets import (
-    QHBoxLayout, QMainWindow, QPlainTextEdit, QPushButton, QSplitter, QTreeView,
-    QVBoxLayout, QWidget,
+    QHBoxLayout, QMainWindow, QPlainTextEdit, QPushButton, QSplitter,
+    QStatusBar, QTreeView, QVBoxLayout, QWidget,
 )
 
 import parce
@@ -93,11 +93,15 @@ class DebugWindow(QMainWindow):
         m = parceqt.treemodel.TreeModel.from_builder(b)
         self.treeView.setModel(m)
 
+        self.setStatusBar(QStatusBar())
+
         # signal connections
         self.ancestorView.node_clicked.connect(self.slot_node_clicked)
-        b.updated.connect(self.slot_cursor_position_changed)
+        b.updated.connect(self.slot_build_updated)
         self.textEdit.cursorPositionChanged.connect(self.slot_cursor_position_changed)
         self.treeView.clicked.connect(self.slot_item_clicked)
+
+        self.textEdit.setFocus()
 
     def set_text(self, text):
         """Set the text in the text edit."""
@@ -114,6 +118,11 @@ class DebugWindow(QMainWindow):
     def adjust_widget(self):
         """Adjust the text edit's palette to the theme."""
         parceqt.adjust_widget(self.textEdit)
+
+    def slot_build_updated(self):
+        """Called when the tree builder has finished a build."""
+        self.slot_cursor_position_changed()
+        self.statusBar().showMessage(", ".join(lexicon_names(self.builder.lexicons)))
 
     def slot_cursor_position_changed(self):
         """Called when the text cursor moved."""
@@ -180,26 +189,34 @@ class AncestorView(QWidget):
         nodes = [token]
         nodes.extend(token.ancestors())
         nodes.reverse()
-        def buttons():
-            yield nodes[0], self.root_button
-            for n in nodes[1:]:
-                button = QPushButton(self)
-                def activate(node=n):
-                    self._clicking = True
-                    self.node_clicked.emit(node)
-                    self._clicking = False
-                button.pressed.connect(activate)
-                yield n, button
-        curlang = None
-        for n, button in buttons():
-            if n.is_context:
-                name = n.lexicon.name()
-                lang, lexicon = name.split('.')
-                text = lexicon if lang == curlang else name
-                curlang = lang
-            else:
-                text = repr(n.action)
-            button.setText(text)
+        names = list(lexicon_names(n.lexicon for n in nodes[:-1]))
+        names.append(repr(token.action))
+        self.root_button.setText(names[0])
+        for node, name in zip(nodes[1:], names[1:]):
+            button = QPushButton(self)
+            button.setMinimumWidth(8)
+            def activate(node=node):
+                self._clicking = True
+                self.node_clicked.emit(node)
+                self._clicking = False
+            button.pressed.connect(activate)
+            button.setText(name)
             layout.addWidget(button)
         layout.addStretch(10)
+
+
+def lexicon_names(lexicons):
+    """Yield the names of the lexicons with the language removed if
+    that is the same as the previous lexicon's language.
+
+    """
+    curlang = None
+    for l in lexicons:
+        fullname = repr(l)
+        lang, name = fullname.split('.')
+        if lang == curlang:
+            yield name
+        else:
+            yield fullname
+            curlang = lang
 
