@@ -85,6 +85,8 @@ class DebugWindow(QMainWindow):
 
         splitter.addWidget(self.textEdit)
         splitter.addWidget(self.treeView)
+        splitter.setStretchFactor(0, 3)
+        splitter.setStretchFactor(1, 2)
 
         self.document = d = self.textEdit.document()
         self.textEdit.setDocument(self.document)
