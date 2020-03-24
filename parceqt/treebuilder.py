@@ -69,37 +69,24 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
         """Return the QTextDocument, which is our parent."""
         return self.parent()
 
-    def start_processing(self):
+    def do_processing(self):
         """Start a background job if needed."""
-        if not self.job:
-            j = self.job = Job(self)
-            j.started.connect(self.started)
-            j.finished.connect(self.finish_processing)
-            j.start()
+        j = self.job = Job(self)
+        j.finished.connect(self.finish_processing)
+        j.start()
 
-    def finish_processing(self):
-        """Reimplemented to run again if there are new changes."""
-        super().finish_processing()
-        if self.changes and not self._incontext:
-            self.start_processing()
-
-    def build_updated(self):
-        """Reimplemented to emit the updated() signal."""
-        super().build_updated()
+    def process_finished(self):
+        super().process_finished()
         self.updated.emit(self.start, self.end)
 
     def wait(self):
         """Wait for completion if a background job is running."""
-        job = self.job
-        if job:
+        if self._busy:
             # we can't simply job.wait() because signals that are executed
             # in the main thread would then deadlock.
             loop = QEventLoop()
             self.updated.connect(loop.quit)
             loop.exec_()
-            # there might be already new changes... wait for them
-            while self.job or self.changes: # whichever is first ;-)
-                loop.exec_()
 
     def set_root_lexicon(self, root_lexicon):
         """Set the root lexicon to use to tokenize the text. Triggers a rebuild."""
