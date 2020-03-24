@@ -167,6 +167,8 @@ class SyntaxHighlighter(util.SingleInstance):
             end = max(end, self.gap_end)
         doc = self.document()
         block = doc.findBlock(start)
+        if not block.isValid():
+            return
         start = pos = block.position()
         num = block.blockNumber() + 100
         last_block = doc.findBlock(end)
