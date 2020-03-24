@@ -81,3 +81,36 @@ class SingleInstance:
         if obj is not None:
             del self.__class__._instances[obj]
 
+
+class InContext:
+    """A context manager that evaluates to True when in a context, else to False.
+
+    Example::
+
+        clicking = InContext()
+
+        def myfunc():
+            with clicking:
+                blablabl()
+
+        # and elsewhere:
+        def blablabl():
+            if not clicking:
+                do_something()
+
+        # when blablabl() is called from myfunc, clicking evaluates to True,
+        # so do_something() is not called then.
+
+    """
+    def __init__(self):
+        self._value = 0
+
+    def __enter__(self):
+        self._value += 1
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._value -= 1
+
+    def __bool__(self):
+        return bool(self._value)
+

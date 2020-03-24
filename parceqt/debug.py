@@ -32,6 +32,7 @@ from PyQt5.QtWidgets import (
 
 import parce
 import parceqt.treemodel
+import parceqt.util
 
 
 class DebugWindow(QMainWindow):
@@ -167,7 +168,7 @@ class AncestorView(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._clicking = False
+        self._clicking = parceqt.util.InContext()
         layout = QHBoxLayout(margin=0, spacing=0)
         self.setLayout(layout)
         self.root_button = QPushButton(self)
@@ -198,9 +199,8 @@ class AncestorView(QWidget):
             button = QPushButton(self)
             button.setMinimumWidth(8)
             def activate(node=node):
-                self._clicking = True
-                self.node_clicked.emit(node)
-                self._clicking = False
+                with self._clicking:
+                    self.node_clicked.emit(node)
             button.pressed.connect(activate)
             button.setText(name)
             layout.addWidget(button)
