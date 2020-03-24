@@ -23,7 +23,7 @@ This module provides a SyntaxHighlighter.
 """
 
 from PyQt5.QtCore import QEventLoop, QObject, Qt
-from PyQt5.QtGui import QGuiApplication, QTextCharFormat, QTextLayout
+from PyQt5.QtGui import QGuiApplication, QTextCharFormat, QTextCursor, QTextLayout
 
 import parce.util
 import parce.theme
@@ -44,16 +44,12 @@ class SyntaxHighlighter(util.SingleInstance):
     needed to enable highlighting.
 
     """
-    gap_start = 0
-    gap_end = 0
-    changed = False
-
     def __init__(self, document, default_root_lexicon=None):
         self._formatter = None
+        self._cursor = None      # remembers the range to rehighlight
         builder = treebuilder.TreeBuilder.instance(document, default_root_lexicon)
         builder.updated.connect(self.slot_updated)
         builder.changed.connect(self.slot_changed)
-        document.contentsChange.connect(self.slot_contents_change)
 
     def delete(self):
         """Reimplemented to clear the highlighting before delete."""
@@ -103,24 +99,6 @@ class SyntaxHighlighter(util.SingleInstance):
         builder = treebuilder.TreeBuilder.instance(self.document())
         builder.set_root_lexicon(root_lexicon)
 
-    def slot_contents_change(self, start, removed, added):
-        """Called on every contents change.
-
-        This is used to know what we need to redraw if we quit an earlier
-        highlighting run.
-
-        """
-        if self.changed is not False:
-            self.changed = True
-            if self.gap_start >= start + removed:
-                self.gap_start = start - removed + added
-            elif self.gap_start > start:
-                self.gap_start = start + added
-            if self.gap_end >= start + removed:
-                self.gap_end = start - removed + added
-            elif self.gap_end >= start:
-                self.gap_end = start + added
-
     def slot_changed(self, start, offset):
         """Called on small changes, allows for moving the formats, awaiting the tokenizer."""
         doc = self.document()
@@ -161,10 +139,6 @@ class SyntaxHighlighter(util.SingleInstance):
         formatter = self._formatter
         if not formatter:
             return
-        if self.gap_start != self.gap_end:
-            # we had interrupted our previous highlighting range, fix it now
-            start = min(start, self.gap_start)
-            end = max(end, self.gap_end)
         doc = self.document()
         block = doc.findBlock(start)
         start = pos = block.position()
@@ -173,6 +147,17 @@ class SyntaxHighlighter(util.SingleInstance):
         if not last_block.isValid():
             last_block = doc.lastBlock()
         end = last_block.position() + last_block.length() - 1
+
+        c = self._cursor
+        if c:
+            # we had interrupted our previous highlighting range, fix it now
+            start = min(start, c.selectionStart())
+            end = max(end, c.selectionEnd())
+        else:
+            c = self._cursor = QTextCursor(doc)
+            c.setKeepPositionOnInsert(True)
+        c.setPosition(end)
+
         formats = []
         builder = treebuilder.TreeBuilder.instance(doc)
         root = builder.root
@@ -202,22 +187,18 @@ class SyntaxHighlighter(util.SingleInstance):
                 num = block.blockNumber() + 1000
                 doc.markContentsDirty(start, pos - start)
                 start = pos
-                self.gap_start = pos
-                self.gap_end = max(self.gap_end, end)
-                self.changed = None
+                c.setPosition(start, QTextCursor.KeepAnchor)
+                revision = doc.revision()
                 QGuiApplication.processEvents(QEventLoop.ExcludeSocketNotifiers)
                 # if the user typed, immediately quit, but come back!
-                if self.changed:
+                if doc.revision() != revision:
                     return
-                self.changed = False
         block.layout().setFormats(formats)
         while block < last_block:
             block = block.next()
             block.layout().clearFormats()
         doc.markContentsDirty(start, end - start)
         # we have finished highlighting
-        self.gap_start = 0
-        self.gap_end = 0
-        self.changed = False
+        self._cursor = None
 
 
