@@ -32,7 +32,7 @@ are generated.
 from PyQt5.QtCore import pyqtSignal,QEventLoop, QObject, QThread
 from PyQt5.QtGui import QTextBlock
 
-from parce.treebuilder import BackgroundTreeBuilder
+import parce.treebuilder
 
 from . import util
 
@@ -46,8 +46,8 @@ class Job(QThread):
         self.builder.process_changes()
 
 
-class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
-    """A BackgroundTreeBuilder that uses Qt signals instead of callbacks.
+class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
+    """A TreeBuilder that uses Qt signals instead of callbacks.
 
     This TreeBuilder is attachted to a QTextDocument, and automatically
     updates the tokens when the document changes.
@@ -59,7 +59,8 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
 
     def __init__(self, document, root_lexicon=None):
         QObject.__init__(self, document)
-        BackgroundTreeBuilder.__init__(self, root_lexicon)
+        parce.treebuilder.TreeBuilder.__init__(self, root_lexicon)
+        self.job = None
         document.contentsChange.connect(self.slot_contents_change)
         text = document.toPlainText()
         if text:
@@ -76,17 +77,37 @@ class TreeBuilder(util.SingleInstance, QObject, BackgroundTreeBuilder):
         j.start()
 
     def process_finished(self):
-        super().process_finished()
+        """Reimplemented to clear the job attribute and emit the ``updated`` signal."""
+        self.job = None
         self.updated.emit(self.start, self.end)
 
     def wait(self):
         """Wait for completion if a background job is running."""
-        if self._busy:
+        if self.busy:
             # we can't simply job.wait() because signals that are executed
             # in the main thread would then deadlock.
             loop = QEventLoop()
             self.updated.connect(loop.quit)
             loop.exec_()
+
+    def get_root(self, wait=False):
+        """Get the root element of the completed tree.
+
+        If wait is True, this call blocks until tokenizing is done, and the
+        full tree is returned. If wait is False, None is returned if the tree
+        is still busy being built.
+
+        Note that, for the lifetime of a TreeBuilder, the root element is always
+        the same. The root element is also accessible in the `root` attribute.
+        But using this method you can be sure that you are dealing with a
+        complete and fully intact tree.
+
+        """
+        if self.busy:
+            if not wait:
+                return
+            self.wait()
+        return self.root
 
     def set_root_lexicon(self, root_lexicon):
         """Set the root lexicon to use to tokenize the text. Triggers a rebuild."""
