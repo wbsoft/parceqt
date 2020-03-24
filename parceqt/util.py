@@ -82,12 +82,12 @@ class SingleInstance:
             del self.__class__._instances[obj]
 
 
-class InContext:
+class Switch:
     """A context manager that evaluates to True when in a context, else to False.
 
     Example::
 
-        clicking = InContext()
+        clicking = Switch()
 
         def myfunc():
             with clicking:

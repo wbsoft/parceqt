@@ -168,7 +168,7 @@ class AncestorView(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._clicking = parceqt.util.InContext()
+        self._clicking = parceqt.util.Switch()
         layout = QHBoxLayout(margin=0, spacing=0)
         self.setLayout(layout)
         self.root_button = QPushButton(self)
