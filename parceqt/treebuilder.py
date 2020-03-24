@@ -76,6 +76,10 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
         j.finished.connect(self.finish_processing)
         j.start()
 
+    def process_started(self):
+        """Reimplemented to emit the ``started`` signal."""
+        self.started.emit()
+
     def process_finished(self):
         """Reimplemented to clear the job attribute and emit the ``updated`` signal."""
         self.job = None
