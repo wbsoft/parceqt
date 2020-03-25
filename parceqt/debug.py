@@ -100,6 +100,7 @@ class DebugWindow(QMainWindow):
 
         # signal connections
         self.ancestorView.node_clicked.connect(self.slot_node_clicked)
+        b.started.connect(self.slot_build_started)
         b.updated.connect(self.slot_build_updated)
         self.textEdit.cursorPositionChanged.connect(self.slot_cursor_position_changed)
         self.treeView.clicked.connect(self.slot_item_clicked)
@@ -122,8 +123,13 @@ class DebugWindow(QMainWindow):
         """Adjust the text edit's palette to the theme."""
         parceqt.adjust_widget(self.textEdit)
 
+    def slot_build_started(self):
+        """Called when the tree builder has started a build."""
+        self.treeView.setCursor(Qt.BusyCursor)
+
     def slot_build_updated(self):
         """Called when the tree builder has finished a build."""
+        self.treeView.unsetCursor()
         self.slot_cursor_position_changed()
         self.statusBar().showMessage(", ".join(lexicon_names(self.builder.lexicons)))
 
