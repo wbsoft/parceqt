@@ -194,8 +194,9 @@ class AncestorView(QWidget):
         nodes.reverse()
         names = list(lexicon_names(n.lexicon for n in nodes[:-1]))
         names.append(repr(token.action))
+        tooltips = list(tooltip(n) for n in nodes[1:])
         self.root_button.setText(names[0])
-        for node, name in zip(nodes[1:], names[1:]):
+        for node, name, tip in zip(nodes[1:], names[1:], tooltips):
             button = QPushButton(self)
             button.setMinimumWidth(8)
             def activate(node=node):
@@ -203,6 +204,7 @@ class AncestorView(QWidget):
                     self.node_clicked.emit(node)
             button.pressed.connect(activate)
             button.setText(name)
+            button.setToolTip(tip)
             layout.addWidget(button)
         layout.addStretch(10)
 
@@ -221,4 +223,19 @@ def lexicon_names(lexicons):
         else:
             yield fullname
             curlang = lang
+
+
+def tooltip(node):
+    """Return a suitable tooltip for a node."""
+    if node.is_context:
+        return """\
+Context: {} at {}:{}
+Parent-index: {}""".format(node.lexicon, node.pos, node.end, node.parent_index())
+    else:
+        return """\
+Token: {} at {}:{}
+Action: {}
+Parent-index: {}""".format(parce.util.abbreviate_repr(node.text), node.pos,
+            node.end, node.action, node.parent_index())
+
 
