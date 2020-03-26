@@ -22,10 +22,16 @@
 This module implements TreeModel, which inherits from QAbstractItemModel
 and provides a model for a tree structure.
 
+This can be used for debugging the tree using a Qt gui.
+See also the debug module.
+
 """
 
 
 from PyQt5.QtCore import QAbstractItemModel, QModelIndex, Qt
+
+
+import parce.util
 
 
 class TreeModel(QAbstractItemModel):
@@ -35,6 +41,12 @@ class TreeModel(QAbstractItemModel):
     """
     CONTEXT_FLAGS = Qt.ItemIsSelectable | Qt.ItemIsEnabled
     TOKEN_FLAGS = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemNeverHasChildren
+
+    CONTEXT_FORMAT = "{name} at {pos} ({count})"
+    TOKEN_FORMAT = "{text} at {pos} ({action})"
+
+    CONTEXT_TOOLTIP = "Context: {name}\nPos: {pos} - {end} (length: {length})\nChild count: {count}\nParent-index: {index}"
+    TOKEN_TOOLTIP = "Token: {text}\nPos: {pos} - {end} (length: {length})\nAction: {action}\nParent-index: {index}"
 
     def __init__(self, tree, parent=None):
         super().__init__(parent)
@@ -78,9 +90,12 @@ class TreeModel(QAbstractItemModel):
         return 0
 
     def data(self, index, role):
-        if role == Qt.DisplayRole and index.isValid():
+        if index.isValid():
             node = index.internalPointer()
-            return repr(node)
+            if role == Qt.DisplayRole:
+                return self.node_repr(node)
+            elif role == Qt.ToolTipRole:
+                return self.node_tooltip(node)
 
     def flags(self, index):
         if index.isValid() and index.internalPointer().is_token:
@@ -110,5 +125,40 @@ class TreeModel(QAbstractItemModel):
         """Called when tree builder has finished."""
         self._reset_in_progress = False
         self.endResetModel()
+
+    @staticmethod
+    def node_dict(node):
+        """Return a dictionary with information about the node."""
+        d = dict(
+            pos = node.pos,
+            end = node.end,
+            length = node.end - node.pos,
+            index = node.parent_index() if node.parent else "-",
+        )
+        if node.is_token:
+            d.update(
+                text = parce.util.abbreviate_repr(node.text),
+                action = node.action,
+            )
+        else:
+            d.update(
+                name = node.lexicon,
+                count = "1 child" if len(node) == 1 else f"{len(node)} children"
+            )
+        return d
+
+    @classmethod
+    def node_tooltip(cls, node):
+        """Return text for a tooltip for the node."""
+        d = cls.node_dict(node)
+        template = cls.TOKEN_TOOLTIP if node.is_token else cls.CONTEXT_TOOLTIP
+        return template.format(**d)
+
+    @classmethod
+    def node_repr(cls, node):
+        """Return short text to decribe the node for a tree view."""
+        d = cls.node_dict(node)
+        template = cls.TOKEN_FORMAT if node.is_token else cls.CONTEXT_FORMAT
+        return template.format(**d)
 
 
