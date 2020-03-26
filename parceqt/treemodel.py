@@ -33,6 +33,9 @@ class TreeModel(QAbstractItemModel):
     Qt widgets such as a QTreeView.
 
     """
+    CONTEXT_FLAGS = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+    TOKEN_FLAGS = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemNeverHasChildren
+
     def __init__(self, tree, parent=None):
         super().__init__(parent)
         self._reset_in_progress = False
@@ -78,6 +81,11 @@ class TreeModel(QAbstractItemModel):
         if role == Qt.DisplayRole and index.isValid():
             node = index.internalPointer()
             return repr(node)
+
+    def flags(self, index):
+        if index.isValid() and index.internalPointer().is_token:
+            return self.TOKEN_FLAGS
+        return self.CONTEXT_FLAGS
 
     def headerData(self, column, orientation, role):
         """Reimplemented to not show the root element's repr while busy."""
