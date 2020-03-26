@@ -140,24 +140,26 @@ class SyntaxHighlighter(util.SingleInstance):
         if not formatter:
             return
         doc = self.document()
-        block = doc.findBlock(start)
-        start = pos = block.position()
-        num = block.blockNumber() + 100
-        last_block = doc.findBlock(end)
-        if not last_block.isValid():
-            last_block = doc.lastBlock()
-        end = last_block.position() + last_block.length() - 1
 
         c = self._cursor
         if c:
-            # we had interrupted our previous highlighting range, fix it now
+            # our previous highlighting run was interrupted, fix it now
             start = min(start, c.selectionStart())
             end = max(end, c.selectionEnd())
         else:
             c = self._cursor = QTextCursor(doc)
             c.setKeepPositionOnInsert(True)
+
+        block = doc.findBlock(start)
+        start = pos = block.position()
+        last_block = doc.findBlock(end)
+        if not last_block.isValid():
+            last_block = doc.lastBlock()
+        end = last_block.position() + last_block.length() - 1
+
         c.setPosition(end)
 
+        num = block.blockNumber() + 100
         formats = []
         builder = treebuilder.TreeBuilder.instance(doc)
         root = builder.root
