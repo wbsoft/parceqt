@@ -42,11 +42,22 @@ class TreeModel(QAbstractItemModel):
     CONTEXT_FLAGS = Qt.ItemIsSelectable | Qt.ItemIsEnabled
     TOKEN_FLAGS = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemNeverHasChildren
 
-    CONTEXT_FORMAT = "{name} at {pos} ({count})"
-    TOKEN_FORMAT = "{text} at {pos} ({action})"
+    CONTEXT_FORMAT = "Context {name} at {pos} ({count})"
+    TOKEN_FORMAT = "Token {text} at {pos} ({action})"
 
-    CONTEXT_TOOLTIP = "Context: {name}\nPos: {pos} - {end} (length: {length})\nChild count: {count}\nParent-index: {index}"
-    TOKEN_TOOLTIP = "Token: {text}\nPos: {pos} - {end} (length: {length})\nAction: {action}\nParent-index: {index}"
+    CONTEXT_TOOLTIP = (
+        "Context: {name}\n"
+        "Pos: {pos} - {end} (length: {length})\n"
+        "Child count: {count}\n"
+        "Parent: {parent}\n"
+        "Parent-index: {index}")
+
+    TOKEN_TOOLTIP = (
+        "Token: {text}\n"
+        "Pos: {pos} - {end} (length: {length})\n"
+        "Action: {action}\n"
+        "Parent: {parent}\n"
+        "Parent-index: {index}")
 
     def __init__(self, tree, parent=None):
         super().__init__(parent)
@@ -133,7 +144,6 @@ class TreeModel(QAbstractItemModel):
             pos = node.pos,
             end = node.end,
             length = node.end - node.pos,
-            index = node.parent_index() if node.parent else "-",
         )
         if node.is_token:
             d.update(
@@ -151,6 +161,10 @@ class TreeModel(QAbstractItemModel):
     def node_tooltip(cls, node):
         """Return text for a tooltip for the node."""
         d = cls.node_dict(node)
+        d.update(
+            index = node.parent_index() if node.parent else "-",
+            parent = cls.node_repr(node.parent) if node.parent else "-",
+        )
         template = cls.TOKEN_TOOLTIP if node.is_token else cls.CONTEXT_TOOLTIP
         return template.format(**d)
 
