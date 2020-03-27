@@ -183,18 +183,21 @@ class AncestorView(QWidget):
 
     def clear(self):
         self.root_button.setText("...")
-        item = self.layout().takeAt(1)
+        layout = self.layout()
+        item = layout.takeAt(1)
         while item:
             widget = item.widget()
             if widget:
                 widget.deleteLater()
-            item = self.layout().takeAt(1)
+            item = layout.takeAt(1)
+        layout.addStretch(10)
 
     def set_token_path(self, token):
         if self._clicking:
             return # don't redraw if the cursor moved because of us
         self.clear()
         layout = self.layout()
+        layout.takeAt(1)
         nodes = [token]
         nodes.extend(token.ancestors())
         nodes.reverse()

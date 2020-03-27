@@ -42,8 +42,8 @@ class TreeModel(QAbstractItemModel):
     CONTEXT_FLAGS = Qt.ItemIsSelectable | Qt.ItemIsEnabled
     TOKEN_FLAGS = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemNeverHasChildren
 
-    CONTEXT_FORMAT = "Context {name} at {pos} ({count})"
-    TOKEN_FORMAT = "Token {text} at {pos} ({action})"
+    CONTEXT_FORMAT = "{name} at {pos} ({count})"
+    TOKEN_FORMAT = "{action} {text} at {pos} {group}"
 
     CONTEXT_TOOLTIP = (
         "Context: {name}\n"
@@ -56,6 +56,7 @@ class TreeModel(QAbstractItemModel):
         "Token: {text}\n"
         "Pos: {pos} - {end} (length: {length})\n"
         "Action: {action}\n"
+        "Group: {group}\n"
         "Parent: {parent}\n"
         "Parent-index: {index}")
 
@@ -156,6 +157,7 @@ class TreeModel(QAbstractItemModel):
             d.update(
                 text = parce.util.abbreviate_repr(node.text),
                 action = node.action,
+                group = format(node.group.index(node)) if node.group else "",
             )
         else:
             d.update(
@@ -172,14 +174,20 @@ class TreeModel(QAbstractItemModel):
             index = node.parent_index() if node.parent else "-",
             parent = cls.node_repr(node.parent) if node.parent else "-",
         )
+        if node.is_token:
+            if not d['group']:
+                d['group'] = "-"
         template = cls.TOKEN_TOOLTIP if node.is_token else cls.CONTEXT_TOOLTIP
-        return template.format(**d)
+        return template.format(**d).strip()
 
     @classmethod
     def node_repr(cls, node):
         """Return short text to decribe the node for a tree view."""
         d = cls.node_dict(node)
         template = cls.TOKEN_FORMAT if node.is_token else cls.CONTEXT_FORMAT
-        return template.format(**d)
+        if node.is_token:
+            if d['group']:
+                d['group'] = "({})".format(d['group'])
+        return template.format(**d).strip()
 
 
