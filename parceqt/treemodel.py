@@ -115,10 +115,17 @@ class TreeModel(QAbstractItemModel):
 
     def headerData(self, column, orientation, role):
         """Reimplemented to not show the root element's repr while busy."""
-        if column == 0 and orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return repr(self._root) if not self._reset_in_progress else "..." # busy indicator
+        if not self._reset_in_progress and column == 0 and orientation == Qt.Horizontal:
+            if role == Qt.DisplayRole:
+                return self.node_repr(self._root)
+            elif role == Qt.ToolTipRole:
+                return self.node_tooltip(self._root)
 
     ## own methods
+    def root(self):
+        """Return the tree's root element."""
+        return self._root
+
     def get_model_index(self, node):
         """Return a QModelIndex for the specified node (Context or Token)."""
         return self.createIndex(node.parent_index(), 0, node)
