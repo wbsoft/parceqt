@@ -113,10 +113,13 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
             self.wait()
         return self.root
 
+    def root_lexicon(self):
+        """Return the current root lexicon."""
+        return self.root.lexicon
+
     def set_root_lexicon(self, root_lexicon):
         """Set the root lexicon to use to tokenize the text. Triggers a rebuild."""
-        if root_lexicon != self.root_lexicon():
-            self.change_root_lexicon(self.document().toPlainText(), root_lexicon)
+        self.change_root_lexicon(self.document().toPlainText(), root_lexicon)
 
     def slot_contents_change(self, start, removed, added):
         """Called after modification of the text, retokenizes the modified part."""

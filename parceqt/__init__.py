@@ -64,14 +64,14 @@ def builder(doc):
     return treebuilder.TreeBuilder.instance(doc)
 
 
-def root(doc, wait=False, callback=None, args=None, kwargs=None):
+def root(doc, wait=False):
     """Get the root element of the tokenized tree of specified text document.
 
     See for more information about the arguments the ``get_root()`` method
-    of ``parce.treebuilder.BackgroundTreeBuilder``.
+    of ``treebuilder.TreeBuilder``.
 
     """
-    return builder(doc).get_root(wait, callback, args, kwargs)
+    return builder(doc).get_root(wait)
 
 
 def set_root_lexicon(doc, lexicon):
