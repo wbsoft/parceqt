@@ -38,12 +38,14 @@ from . import util
 
 
 class Job(QThread):
-    def __init__(self, builder):
+    def __init__(self, process):
         super().__init__()
-        self.builder = builder
+        self.process = process
 
     def run(self):
-        self.builder.process_changes()
+        for state in self.process:
+            if state in ("replace", "finish"):
+                break
 
 
 class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
@@ -71,10 +73,20 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
         return self.parent()
 
     def do_processing(self):
-        """Start a background job if needed."""
-        j = self.job = Job(self)
-        j.finished.connect(self.finish_processing)
+        """Reimplemented to start a background job."""
+        self.run_job(self.process())
+
+    def run_job(self, process):
+        """Yield from process in a background thread."""
+        j = self.job = Job(process)
+        j.finished.connect(self.slot_job_finished)
         j.start()
+
+    def slot_job_finished(self):
+        """Called when the QThread job finished."""
+        for state in self.job.process:
+            if state == "build":
+                return self.run_job(self.job.process)
 
     def process_started(self):
         """Reimplemented to emit the ``started`` signal."""
