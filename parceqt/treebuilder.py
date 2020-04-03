@@ -64,7 +64,7 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
         document.contentsChange.connect(self.slot_contents_change)
         text = document.toPlainText()
         if text:
-            self.change_text(text)
+            self.change(text)
 
     def document(self):
         """Return the QTextDocument, which is our parent."""
@@ -119,7 +119,7 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
 
     def set_root_lexicon(self, root_lexicon):
         """Set the root lexicon to use to tokenize the text. Triggers a rebuild."""
-        self.change_root_lexicon(self.document().toPlainText(), root_lexicon)
+        self.change(self.document().toPlainText(), root_lexicon)
 
     def slot_contents_change(self, start, removed, added):
         """Called after modification of the text, retokenizes the modified part."""
@@ -135,6 +135,6 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
             else:
                 # formats need to be cleared from start
                 self.changed.emit(start, 0)
-        self.change_text(doc.toPlainText(), start, removed, added)
+        self.change(doc.toPlainText(), False, start, removed, added)
 
 
