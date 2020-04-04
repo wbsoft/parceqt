@@ -29,23 +29,12 @@ are generated.
 
 """
 
-from PyQt5.QtCore import pyqtSignal,QEventLoop, QObject, QThread
+from PyQt5.QtCore import pyqtSignal, QEventLoop, QObject
 from PyQt5.QtGui import QTextBlock
 
 import parce.treebuilder
 
 from . import util
-
-
-class Job(QThread):
-    """Call function in a background thread and then finished in the main thread."""
-    def __init__(self, function, finished):
-        super().__init__()
-        self.func = function
-        self.finished.connect(finished)
-
-    def run(self):
-        self.func()
 
 
 class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
@@ -62,7 +51,6 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
     def __init__(self, document, root_lexicon=None):
         QObject.__init__(self, document)
         parce.treebuilder.TreeBuilder.__init__(self, root_lexicon)
-        self.job = None
         document.contentsChange.connect(self.slot_contents_change)
         text = document.toPlainText()
         if text:
@@ -81,9 +69,7 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
         """Run the process; call a background thread for the "update" state."""
         for state in self._process:
             if state == "build":
-                j = self.job = Job(self.background_loop, self.process_loop)
-                j.start()
-                return
+                return util.call_async(self.background_loop, self.process_loop)
         del self._process
 
     def background_loop(self):
@@ -97,8 +83,7 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
         self.started.emit()
 
     def process_finished(self):
-        """Reimplemented to clear the job attribute and emit the ``updated`` signal."""
-        self.job = None
+        """Reimplemented to emit the ``updated`` signal."""
         self.updated.emit(self.start, self.end)
 
     def wait(self):

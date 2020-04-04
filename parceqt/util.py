@@ -24,6 +24,44 @@ Various utility classes and functions.
 
 import weakref
 
+from PyQt5.QtCore import QThread
+
+
+_jobs = set()   # store running Job instances
+
+
+class Job(QThread):
+    """Simple QThread helper that runs a ``function`` in a background thread.
+
+    If you specify a ``finished`` callable, it will be called when the function
+    has finished. If ``with_result`` is True, the ``finished`` callable will
+    be called with the result of the function.
+
+    The job is started immediately. You do not need to store the job, it will
+    keep a reference itself as long as it is running.
+
+    """
+    def __init__(self, function, finished=None, with_result=False):
+        super().__init__()
+        self._function = function
+        self._finished = finished
+        self._with_result = with_result
+        _jobs.add(self)
+        self.finished.connect(self._slot_finished)
+        self.start()
+
+    def run(self):
+        """Run the function and store the result."""
+        self._result = self._function()
+
+    def _slot_finished(self):
+        _jobs.discard(self)
+        if self._finished is not None:
+            if self._with_result:
+                self._finished(self._result)
+            else:
+                self._finished()
+
 
 class SingleInstance:
     """Keeps a single instance around for another object.
@@ -113,4 +151,17 @@ class Switch:
 
     def __bool__(self):
         return bool(self._value)
+
+
+def call_async(function, finished=None):
+    """Call ``function()`` in a background thread and then ``finished()`` when
+    done in the main thread."""
+    return Job(function, finished)
+
+
+def call_async_with_result(function, finished=None):
+    """Call ``result = function()`` in a background thread and then
+    ``finished(result)`` when done in the main thread."""
+    return Job(function, finished, True)
+
 
