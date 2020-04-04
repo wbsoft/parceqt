@@ -66,9 +66,9 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
         self.process_loop()
 
     def process_loop(self):
-        """Run the process; call a background thread for the "update" state."""
-        for state in self._process:
-            if state == "build":
+        """Run the process; call a background thread for the "update" stage."""
+        for stage in self._process:
+            if stage == "build":
                 return util.call_async(self.background_loop, self.process_loop)
         if not self.busy:
             # during process_finished() a new process might have started
@@ -76,8 +76,8 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
 
     def background_loop(self):
         """Run the background part of the process."""
-        for state in self._process:
-            if state in ("replace", "finish"):
+        for stage in self._process:
+            if stage in ("replace", "finish"):
                 break
 
     def process_started(self):
