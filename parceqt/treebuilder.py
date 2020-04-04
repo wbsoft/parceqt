@@ -38,14 +38,14 @@ from . import util
 
 
 class Job(QThread):
-    def __init__(self, process):
+    """Call function in a background thread and then finished in the main thread."""
+    def __init__(self, function, finished):
         super().__init__()
-        self.process = process
+        self.func = function
+        self.finished.connect(finished)
 
     def run(self):
-        for state in self.process:
-            if state in ("replace", "finish"):
-                break
+        self.func()
 
 
 class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
@@ -72,21 +72,24 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
         """Return the QTextDocument, which is our parent."""
         return self.parent()
 
-    def do_processing(self):
+    def start_processing(self):
         """Reimplemented to start a background job."""
-        self.run_job(self.process())
+        self._process = self.process()
+        self.process_loop()
 
-    def run_job(self, process):
-        """Yield from process in a background thread."""
-        j = self.job = Job(process)
-        j.finished.connect(self.slot_job_finished)
-        j.start()
-
-    def slot_job_finished(self):
-        """Called when the QThread job finished."""
-        for state in self.job.process:
+    def process_loop(self):
+        """Run the process; call a background thread for the "update" state."""
+        for state in self._process:
             if state == "build":
-                return self.run_job(self.job.process)
+                j = self.job = Job(self.background_loop, self.process_loop)
+                j.start()
+                break
+
+    def background_loop(self):
+        """Run the background part of the process."""
+        for state in self._process:
+            if state in ("replace", "finish"):
+                break
 
     def process_started(self):
         """Reimplemented to emit the ``started`` signal."""
