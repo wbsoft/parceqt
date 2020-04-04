@@ -38,18 +38,23 @@ class SyntaxHighlighter(util.SingleInstance):
 
     Instantiate with::
 
-        SyntaxHighlighter.instance(qTextDocument, root_lexicon)
+        SyntaxHighlighter.instance(treebuilder)
+
+    Use the builder to set the root lexicon.
 
     By default, no theme is set; use ``set_theme()`` to set a theme, which is
     needed to enable highlighting.
 
     """
-    def __init__(self, document, default_root_lexicon=None):
+    def __init__(self, builder):
         self._formatter = None
         self._cursor = None      # remembers the range to rehighlight
-        builder = treebuilder.TreeBuilder.instance(document, default_root_lexicon)
         builder.updated.connect(self.slot_updated)
         builder.changed.connect(self.slot_changed)
+
+    def builder(self):
+        """Return the builder we were instantiated with."""
+        return self.target_object()
 
     def delete(self):
         """Reimplemented to clear the highlighting before delete."""
@@ -87,17 +92,7 @@ class SyntaxHighlighter(util.SingleInstance):
 
     def document(self):
         """Return the QTextDocument."""
-        return self.target_object()
-
-    def root_lexicon(self):
-        """Return the currently (being) set root lexicon."""
-        builder = treebuilder.TreeBuilder.instance(self.document())
-        return builder.root_lexicon()
-
-    def set_root_lexicon(self, root_lexicon):
-        """Set the root lexicon to use to tokenize the text. Triggers a rebuild."""
-        builder = treebuilder.TreeBuilder.instance(self.document())
-        builder.set_root_lexicon(root_lexicon)
+        return self.builder().document()
 
     def slot_changed(self, start, offset):
         """Called on small changes, allows for moving the formats, awaiting the tokenizer."""
@@ -161,8 +156,7 @@ class SyntaxHighlighter(util.SingleInstance):
 
         num = block.blockNumber() + 100
         formats = []
-        builder = treebuilder.TreeBuilder.instance(doc)
-        root = builder.root
+        root = self.builder().root
         for f in formatter.format_ranges(root.context_slices(start, end)):
             while f.pos >= pos + block.length():
                 block.layout().setFormats(formats)

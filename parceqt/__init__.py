@@ -30,8 +30,11 @@ QTextDocument using parce.
 """
 
 __all__ = (
+    'Cursor',
     'Document',
     'Formatter',
+    'TreeBuilder',
+    'SyntaxHighlighter',
     'builder',
     'root',
     'set_root_lexicon',
@@ -48,8 +51,10 @@ from PyQt5.QtWidgets import QApplication
 import parce.theme
 
 from .pkginfo import version, version_string
-from .document import Document
+from .document import Cursor, Document
 from .formatter import Formatter
+from .treebuilder import TreeBuilder
+from .highlighter import SyntaxHighlighter
 
 
 def builder(doc):
@@ -60,8 +65,7 @@ def builder(doc):
     signal to get notified of changes in the tokenized tree.
 
     """
-    from . import treebuilder
-    return treebuilder.TreeBuilder.instance(doc)
+    return TreeBuilder.instance(doc)
 
 
 def root(doc, wait=False):
@@ -94,13 +98,13 @@ def highlight(doc, theme="default"):
     root_lexicon set.
 
     """
-    from . import highlighter
+    b = builder(doc)
     if theme is False:
-        highlighter.SyntaxHighlighter.delete_instance(doc)
+        SyntaxHighlighter.delete_instance(b)
     else:
         if isinstance(theme, str):
             theme = parce.theme.Theme.byname(theme)
-        highlighter.SyntaxHighlighter.instance(doc).set_theme(theme)
+        SyntaxHighlighter.instance(b).set_theme(theme)
 
 
 def adjust_widget(w):
@@ -125,8 +129,8 @@ def adjust_widget(w):
 
     """
     doc = w.document()
-    from . import highlighter
-    h = highlighter.SyntaxHighlighter.get_instance(doc)
+    b = builder(doc)
+    h = SyntaxHighlighter.get_instance(b)
     if h:
         theme = h.theme()
         if theme:
@@ -148,7 +152,6 @@ def cursor(cur):
     for the same selection or position.
 
     """
-    from .document import Cursor
     c = Cursor(Document(cur.document()))
     c.start = cur.selectionStart()
     c.end = cur.selectionEnd()

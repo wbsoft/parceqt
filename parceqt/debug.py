@@ -26,11 +26,14 @@ This module provides a debug window to show/edit text and the tokenized tree.
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QTextCursor, QTextDocument
 from PyQt5.QtWidgets import (
-    QHBoxLayout, QMainWindow, QPlainTextEdit, QPushButton, QSplitter,
-    QStatusBar, QTreeView, QVBoxLayout, QWidget,
+    QApplication, QHBoxLayout, QMainWindow, QPlainTextEdit, QPushButton,
+    QSplitter, QStatusBar, QTreeView, QVBoxLayout, QWidget,
 )
 
 import parce
+import parceqt
+import parceqt.highlighter
+import parceqt.treebuilder
 import parceqt.treemodel
 import parceqt.util
 
@@ -92,7 +95,7 @@ class DebugWindow(QMainWindow):
         self.document = d = self.textEdit.document()
         self.textEdit.setDocument(self.document)
 
-        self.builder = b = parceqt.builder(d)
+        self.builder = b = TreeBuilder.instance(d)
         m = parceqt.treemodel.TreeModel.from_builder(b)
         self.treeView.setModel(m)
 
@@ -113,11 +116,24 @@ class DebugWindow(QMainWindow):
 
     def set_root_lexicon(self, lexicon):
         """Set the root lexicon to use."""
-        parceqt.set_root_lexicon(self.document, lexicon)
+        self.builder.set_root_lexicon(lexicon)
 
-    def set_theme(self, theme="default"):
+    def set_theme(self, theme="default", adjust_widget=True):
         """Set the theme to use for the text edit."""
-        parceqt.highlight(self.document, theme)
+        h = parceqt.highlighter.SyntaxHighlighter.instance(self.builder)
+        if isinstance(theme, str):
+             theme = parce.theme_by_name(theme)
+        h.set_theme(theme)
+        if adjust_widget:
+            if theme:
+                f = parceqt.formatter.Formatter(theme)
+                font = f.font()
+                if font:
+                    self.textEdit.setFont(font)
+                self.textEdit.setPalette(f.palette())
+            else:
+                self.textEdit.setFont(QApplication.font(w))
+                self.textEdit.setPalette(QApplication.palette(w))
 
     def adjust_widget(self):
         """Adjust the text edit's palette to the theme."""
@@ -218,6 +234,13 @@ class AncestorView(QWidget):
             button.setToolTip(tip)
             layout.addWidget(button)
         layout.addStretch(10)
+
+
+class TreeBuilder(parceqt.treebuilder.TreeBuilder):
+    def process(self):
+        for stage in super().process():
+            print("Processing stage: ", stage)
+            yield stage
 
 
 def lexicon_names(lexicons):
