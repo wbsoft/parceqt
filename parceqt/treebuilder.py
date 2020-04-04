@@ -75,10 +75,9 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
             del self._process
 
     def background_loop(self):
-        """Run the background part of the process."""
+        """Run the background (build) part of the process."""
         for stage in self._process:
-            if stage in ("replace", "finish"):
-                break
+            break
 
     def process_started(self):
         """Reimplemented to emit the ``started`` signal."""
