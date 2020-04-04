@@ -97,25 +97,6 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
             self.updated.connect(loop.quit)
             loop.exec_()
 
-    def get_root(self, wait=False):
-        """Get the root element of the completed tree.
-
-        If wait is True, this call blocks until tokenizing is done, and the
-        full tree is returned. If wait is False, None is returned if the tree
-        is still busy being built.
-
-        Note that, for the lifetime of a TreeBuilder, the root element is always
-        the same. The root element is also accessible in the `root` attribute.
-        But using this method you can be sure that you are dealing with a
-        complete and fully intact tree.
-
-        """
-        if self.busy:
-            if not wait:
-                return
-            self.wait()
-        return self.root
-
     def root_lexicon(self):
         """Return the current root lexicon."""
         return self.root.lexicon
