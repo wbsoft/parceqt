@@ -23,11 +23,11 @@ This module provides a debug window to show/edit text and the tokenized tree.
 
 """
 
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtGui import QTextCursor, QTextDocument
+from PyQt5.QtCore import pyqtSignal, Qt, QTimer
+from PyQt5.QtGui import QColor, QTextCharFormat, QTextCursor, QTextDocument
 from PyQt5.QtWidgets import (
     QApplication, QHBoxLayout, QMainWindow, QPlainTextEdit, QPushButton,
-    QSplitter, QStatusBar, QTreeView, QVBoxLayout, QWidget,
+    QSplitter, QStatusBar, QTextEdit, QTreeView, QVBoxLayout, QWidget,
 )
 
 import parce
@@ -73,6 +73,8 @@ class DebugWindow(QMainWindow):
     """
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._clear_timer = QTimer(timeout=self.clear_updated_region, singleShot=True)
+
         widget = QWidget(self)
         self.setCentralWidget(widget)
         layout = QVBoxLayout(margin=4, spacing=2)
@@ -148,6 +150,7 @@ class DebugWindow(QMainWindow):
         self.treeView.unsetCursor()
         self.slot_cursor_position_changed()
         self.statusBar().showMessage(", ".join(lexicon_names(self.builder.lexicons)))
+        self.show_updated_region()
 
     def slot_cursor_position_changed(self):
         """Called when the text cursor moved."""
@@ -182,6 +185,24 @@ class DebugWindow(QMainWindow):
             index = self.treeView.model().get_model_index(node)
             self.treeView.expand(index)
             self.treeView.setCurrentIndex(index)
+
+    def show_updated_region(self):
+        c = QTextCursor(self.document)
+        end = self.builder.end
+        if end >= self.document.characterCount():
+            end -= 1
+        c.setPosition(end)
+        c.setPosition(self.builder.start, QTextCursor.KeepAnchor)
+        f = QTextCharFormat()
+        f.setBackground(QColor("palegreen"))
+        es = QTextEdit.ExtraSelection()
+        es.cursor = c
+        es.format = f
+        self.textEdit.setExtraSelections([es])
+        self._clear_timer.start(2000)
+
+    def clear_updated_region(self):
+        self.textEdit.setExtraSelections([])
 
 
 class AncestorView(QWidget):
@@ -237,10 +258,16 @@ class AncestorView(QWidget):
 
 
 class TreeBuilder(parceqt.treebuilder.TreeBuilder):
+    """Inherited from to add some debugging capabilities."""
     def process(self):
         for stage in super().process():
             print("Processing stage: ", stage)
             yield stage
+
+    def process_finished(self):
+        """Reimplemented to emit the ``updated`` signal."""
+        print(f"Updated: {self.start}-{self.end}")
+        super().process_finished()
 
 
 def lexicon_names(lexicons):
