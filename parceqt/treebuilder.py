@@ -70,7 +70,9 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
         for state in self._process:
             if state == "build":
                 return util.call_async(self.background_loop, self.process_loop)
-        del self._process
+        if not self.busy:
+            # during process_finished() a new process might have started
+            del self._process
 
     def background_loop(self):
         """Run the background part of the process."""
