@@ -83,7 +83,8 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
             if state == "build":
                 j = self.job = Job(self.background_loop, self.process_loop)
                 j.start()
-                break
+                return
+        del self._process
 
     def background_loop(self):
         """Run the background part of the process."""
