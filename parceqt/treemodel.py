@@ -76,6 +76,21 @@ class TreeModel(QAbstractItemModel):
         builder.updated.connect(model.slot_build_finished)
         return model
 
+    @classmethod
+    def from_debugging_builder(cls, builder):
+        """Instantiate and connect to all the fine-grained signals of a
+        debugging tree builder. (See the :mod:`debug` module).
+
+        """
+        model = cls(builder.root)
+        builder.begin_remove_rows.connect(model.slot_begin_remove_rows)
+        builder.end_remove_rows.connect(model.slot_end_remove_rows)
+        builder.begin_insert_rows.connect(model.slot_begin_insert_rows)
+        builder.end_insert_rows.connect(model.slot_end_insert_rows)
+        builder.change_position.connect(model.slot_change_position)
+        builder.change_root_lexicon.connect(model.slot_change_root_lexicon)
+        return model
+
     ## reimplemented virtual methods
     def index(self, row, column, parent):
         if self.hasIndex(row, column, parent):
@@ -129,7 +144,9 @@ class TreeModel(QAbstractItemModel):
 
     def get_model_index(self, node):
         """Return a QModelIndex for the specified node (Context or Token)."""
-        return self.createIndex(node.parent_index(), 0, node)
+        if node.parent:
+            return self.createIndex(node.parent_index(), 0, node)
+        return QModelIndex()
 
     def get_node(self, index):
         """Return the node (Context or Token) for the specified QModelIndex."""
@@ -144,6 +161,29 @@ class TreeModel(QAbstractItemModel):
         """Called when tree builder has finished."""
         self._reset_in_progress = False
         self.endResetModel()
+
+    def slot_begin_remove_rows(self, node, first, last):
+        self.beginRemoveRows(self.get_model_index(node), first, last)
+
+    def slot_end_remove_rows(self):
+        self.endRemoveRows()
+
+    def slot_begin_insert_rows(self, node, first, last):
+        self.beginInsertRows(self.get_model_index(node), first, last)
+
+    def slot_end_insert_rows(self):
+        self.endInsertRows()
+
+    def slot_change_position(self, node, first, last):
+        index = self.get_model_index(node)
+        self.dataChanged.emit(index, index)
+        # the following would be locigal but is very slow:
+        #topleft = self.get_model_index(node[first])
+        #bottomright = self.get_model_index(node[last])
+        #self.dataChanged.emit(topleft, bottomright)
+
+    def slot_change_root_lexicon(self):
+        self.dataChanged.emit(QModelIndex(), QModelIndex())
 
     @staticmethod
     def node_dict(node):

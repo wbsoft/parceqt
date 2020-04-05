@@ -98,7 +98,8 @@ class DebugWindow(QMainWindow):
         self.textEdit.setDocument(self.document)
 
         self.builder = b = TreeBuilder.instance(d)
-        m = parceqt.treemodel.TreeModel.from_builder(b)
+        #m = parceqt.treemodel.TreeModel.from_builder(b)
+        m = parceqt.treemodel.TreeModel.from_debugging_builder(b)
         self.treeView.setModel(m)
 
         self.setStatusBar(QStatusBar())
@@ -259,15 +260,47 @@ class AncestorView(QWidget):
 
 class TreeBuilder(parceqt.treebuilder.TreeBuilder):
     """Inherited from to add some debugging capabilities."""
+    begin_remove_rows = pyqtSignal(object, int, int)
+    end_remove_rows = pyqtSignal()
+    begin_insert_rows = pyqtSignal(object, int, int)
+    end_insert_rows = pyqtSignal()
+    change_position = pyqtSignal(object, int, int)
+    change_root_lexicon = pyqtSignal()
+
     def process(self):
         for stage in super().process():
-            print("Processing stage: ", stage)
+            print("Processing stage:", stage)
             yield stage
 
     def process_finished(self):
         """Reimplemented to emit the ``updated`` signal."""
-        print(f"Updated: {self.start}-{self.end}")
         super().process_finished()
+
+    def replace_nodes(self, context, slice_, nodes):
+        """Reimplemented for fine-grained signals."""
+        start, end = get_slice(context, slice_)
+        end -= 1
+        if start < len(context) and start <= end:
+            self.begin_remove_rows.emit(context, start, end)
+            del context[slice_]
+            self.end_remove_rows.emit()
+        if nodes:
+            self.begin_insert_rows.emit(context, start, start + len(nodes) - 1)
+            context[start:start] = nodes
+            self.end_insert_rows.emit()
+
+    def replace_pos(self, context, slice_, offset):
+        """Reimplemented for fine-grained signals."""
+        super().replace_pos(context, slice_, offset)
+        start, end = get_slice(context, slice_)
+        end -= 1
+        if start < len(context) and start <= end:
+            self.change_position.emit(context, start, end)
+
+    def replace_root_lexicon(self, lexicon):
+        """Reimplemented for fine-grained signals."""
+        super().replace_root_lexicon(lexicon)
+        self.change_root_lexicon.emit()
 
 
 def lexicon_names(lexicons):
@@ -286,3 +319,24 @@ def lexicon_names(lexicons):
             curlang = lang
 
 
+def get_slice(context, slice_):
+    """Return a tuple(start, end) for the ``slice_`` of the ``context``.
+
+    None is interpreted corrrectly and incorrect values are corrected.
+    End is in fact 1 after the last, just as for Python slices.
+
+    """
+    total = len(context)
+    start = slice_.start
+    if start is None or start < -total:
+        start = 0
+    elif start < 0:
+        start += total
+    end = slice_.stop
+    if end is None or end > total:
+        end = total
+    elif end < -total:
+        end = 0
+    elif end < 0:
+        end += total
+    return start, end
