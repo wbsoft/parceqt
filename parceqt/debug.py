@@ -81,8 +81,14 @@ class DebugWindow(QMainWindow):
         layout = QVBoxLayout(margin=4, spacing=2)
         widget.setLayout(layout)
 
+        top_layout = QHBoxLayout(margin=0, spacing=0)
+
+        self.lexiconChooser = LexiconChooser(self)
         self.ancestorView = AncestorView(self)
-        layout.addWidget(self.ancestorView, 0)
+        top_layout.addWidget(self.lexiconChooser)
+        top_layout.addWidget(self.ancestorView)
+        top_layout.addStretch(10)
+        layout.addLayout(top_layout)
 
         splitter = QSplitter(self, orientation=Qt.Horizontal)
         layout.addWidget(splitter, 100)
@@ -101,7 +107,9 @@ class DebugWindow(QMainWindow):
         self.builder = b = TreeBuilder.instance(d)
         self.setStatusBar(QStatusBar())
         self.create_model()
+
         # signal connections
+        self.lexiconChooser.lexicon_changed.connect(self.slot_root_lexicon_changed)
         self.ancestorView.node_clicked.connect(self.slot_node_clicked)
         b.started.connect(self.slot_build_started)
         b.updated.connect(self.slot_build_updated)
@@ -130,7 +138,7 @@ class DebugWindow(QMainWindow):
 
     def set_root_lexicon(self, lexicon):
         """Set the root lexicon to use."""
-        self.builder.set_root_lexicon(lexicon)
+        self.lexiconChooser.set_root_lexicon(lexicon)
 
     def set_theme(self, theme="default", adjust_widget=True):
         """Set the theme to use for the text edit."""
@@ -204,6 +212,9 @@ class DebugWindow(QMainWindow):
                 self.treeView.expand(index)
                 self.treeView.setCurrentIndex(index)
 
+    def slot_root_lexicon_changed(self, lexicon):
+        self.builder.set_root_lexicon(lexicon)
+
     def show_updated_region(self):
         end = self.builder.end
         if end >= self.document.characterCount() - 1:
@@ -268,7 +279,40 @@ class AncestorView(QWidget):
             button.setText(name)
             button.setToolTip(tip)
             layout.addWidget(button)
-        layout.addStretch(10)
+
+
+class LexiconChooser(QComboBox):
+    """A combobox showing available lexicons."""
+    lexicon_changed = pyqtSignal(object)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.populate()
+        self.currentIndexChanged.connect(self.slot_current_index_changed)
+
+    def populate(self):
+        """Populate the combobox with the available root lexicons in parce."""
+        self.clear()
+        self.lexicons = list(root_lexicons())
+        self.addItems([l.name() for l in self.lexicons])
+
+    def set_root_lexicon(self, lexicon):
+        """Set the current root lexicon, may also be a new one, which is appended then."""
+        try:
+            i = self.lexicons.index(lexicon)
+        except ValueError:
+            i = len(self.lexicons)
+            self.lexicons.append(lexicon)
+            self.addItem(lexicon.name())
+        self.setCurrentIndex(i)
+
+    def root_lexicon(self):
+        """Return the current root lexicon."""
+        return self.lexicons[self.currentIndex()]
+
+    def slot_current_index_changed(self, i):
+        """Called on index change, emits the lexicon_changed signal."""
+        self.lexicon_changed.emit(self.lexicons[i])
 
 
 class TreeBuilder(parceqt.treebuilder.TreeBuilder):
