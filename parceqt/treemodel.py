@@ -65,31 +65,41 @@ class TreeModel(QAbstractItemModel):
         self._reset_in_progress = False
         self._root = tree
 
-    @classmethod
-    def from_builder(cls, builder):
-        """Instantiate a TreeModel that keeps itselves updated whenever
-        the specified parceqt TreeBuilder updates.
+    def connect_builder(self, builder):
+        """Connect to the started and finished signals of a TreeBuilder."""
+        builder.started.connect(self.slot_build_started)
+        builder.updated.connect(self.slot_build_finished)
+
+    def disconnect_builder(self, builder):
+        """Disconnect from the started and finished signals of a TreeBuilder."""
+        builder.started.disconnect(self.slot_build_started)
+        builder.updated.disconnect(self.slot_build_finished)
+
+    def connect_debugging_builder(self, builder):
+        """Connect to all the signals of a debugging tree builder.
+
+        (See the :mod:`debug` module).
 
         """
-        model = cls(builder.root)
-        builder.started.connect(model.slot_build_started)
-        builder.updated.connect(model.slot_build_finished)
-        return model
+        builder.begin_remove_rows.connect(self.slot_begin_remove_rows)
+        builder.end_remove_rows.connect(self.slot_end_remove_rows)
+        builder.begin_insert_rows.connect(self.slot_begin_insert_rows)
+        builder.end_insert_rows.connect(self.slot_end_insert_rows)
+        builder.change_position.connect(self.slot_change_position)
+        builder.change_root_lexicon.connect(self.slot_change_root_lexicon)
 
-    @classmethod
-    def from_debugging_builder(cls, builder):
-        """Instantiate and connect to all the fine-grained signals of a
-        debugging tree builder. (See the :mod:`debug` module).
+    def disconnect_debugging_builder(self, builder):
+        """Disconnect from all the signals of a debugging tree builder.
+
+        (See the :mod:`debug` module).
 
         """
-        model = cls(builder.root)
-        builder.begin_remove_rows.connect(model.slot_begin_remove_rows)
-        builder.end_remove_rows.connect(model.slot_end_remove_rows)
-        builder.begin_insert_rows.connect(model.slot_begin_insert_rows)
-        builder.end_insert_rows.connect(model.slot_end_insert_rows)
-        builder.change_position.connect(model.slot_change_position)
-        builder.change_root_lexicon.connect(model.slot_change_root_lexicon)
-        return model
+        builder.begin_remove_rows.disconnect(self.slot_begin_remove_rows)
+        builder.end_remove_rows.disconnect(self.slot_end_remove_rows)
+        builder.begin_insert_rows.disconnect(self.slot_begin_insert_rows)
+        builder.end_insert_rows.disconnect(self.slot_end_insert_rows)
+        builder.change_position.disconnect(self.slot_change_position)
+        builder.change_root_lexicon.disconnect(self.slot_change_root_lexicon)
 
     ## reimplemented virtual methods
     def index(self, row, column, parent):

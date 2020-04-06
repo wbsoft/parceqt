@@ -98,12 +98,8 @@ class DebugWindow(QMainWindow):
         self.textEdit.setDocument(self.document)
 
         self.builder = b = TreeBuilder.instance(d)
-        #m = parceqt.treemodel.TreeModel.from_builder(b)
-        m = parceqt.treemodel.TreeModel.from_debugging_builder(b)
-        self.treeView.setModel(m)
-
         self.setStatusBar(QStatusBar())
-
+        self.create_model()
         # signal connections
         self.ancestorView.node_clicked.connect(self.slot_node_clicked)
         b.started.connect(self.slot_build_started)
@@ -112,6 +108,20 @@ class DebugWindow(QMainWindow):
         self.treeView.clicked.connect(self.slot_item_clicked)
 
         self.textEdit.setFocus()
+
+    def create_model(self):
+        """Instantiate a tree model for the tree view."""
+        m = parceqt.treemodel.TreeModel(self.builder.root)
+        m.connect_debugging_builder(self.builder)
+        self.treeView.setModel(m)
+
+    def delete_model(self):
+        """Delete the model and remove it from the tree."""
+        m = self.treeView.model()
+        if m:
+            m.disconnect_debugging_builder(self.builder)
+            self.treeView.setModel(None)
+            m.deleteLater()
 
     def set_text(self, text):
         """Set the text in the text edit."""
@@ -160,20 +170,24 @@ class DebugWindow(QMainWindow):
             pos = self.textEdit.textCursor().position()
             token = tree.find_token(pos)
             self.ancestorView.set_token_path(token)
-            index = self.treeView.model().get_model_index(token)
-            self.treeView.setCurrentIndex(index)
+            model = self.treeView.model()
+            if model:
+                index = model.get_model_index(token)
+                self.treeView.setCurrentIndex(index)
         elif tree is not None:
             self.ancestorView.clear()
 
     def slot_item_clicked(self, index):
         tree = self.builder.get_root()
         if tree:
-            node = self.treeView.model().get_node(index)
-            cursor = self.textEdit.textCursor()
-            cursor.setPosition(node.end)
-            cursor.setPosition(node.pos, QTextCursor.KeepAnchor)
-            self.textEdit.setTextCursor(cursor)
-            self.textEdit.setFocus()
+            model = self.treeView.model()
+            if model:
+                node = self.treeView.model().get_node(index)
+                cursor = self.textEdit.textCursor()
+                cursor.setPosition(node.end)
+                cursor.setPosition(node.pos, QTextCursor.KeepAnchor)
+                self.textEdit.setTextCursor(cursor)
+        self.textEdit.setFocus()
 
     def slot_node_clicked(self, node):
         tree = self.builder.get_root()
@@ -183,15 +197,19 @@ class DebugWindow(QMainWindow):
             cursor.setPosition(node.pos, QTextCursor.KeepAnchor)
             self.textEdit.setTextCursor(cursor)
             self.textEdit.setFocus()
-            index = self.treeView.model().get_model_index(node)
-            self.treeView.expand(index)
-            self.treeView.setCurrentIndex(index)
+            model = self.treeView.model()
+            if model:
+                index = model.get_model_index(node)
+                self.treeView.expand(index)
+                self.treeView.setCurrentIndex(index)
 
     def show_updated_region(self):
-        c = QTextCursor(self.document)
         end = self.builder.end
-        if end >= self.document.characterCount():
-            end -= 1
+        if end >= self.document.characterCount() - 1:
+            end = self.document.characterCount() - 1
+            if self.builder.start == 0:
+                return
+        c = QTextCursor(self.document)
         c.setPosition(end)
         c.setPosition(self.builder.start, QTextCursor.KeepAnchor)
         f = QTextCharFormat()
