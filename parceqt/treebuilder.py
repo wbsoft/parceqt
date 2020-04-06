@@ -46,10 +46,9 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
     """
     started = pyqtSignal()          #: emitted when a new update job started
     updated = pyqtSignal(int, int)  #: emitted when one full run finished
-    changed = pyqtSignal(int, int)  #: emitted when a contents change falls in one block
     preview = pyqtSignal(object)    #: emitted with premature tree when peek_threshold is reached
 
-    peek_threshold = 250
+    peek_threshold = 500
 
     def __init__(self, document, root_lexicon=None):
         QObject.__init__(self, document)
@@ -113,18 +112,6 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
 
     def slot_contents_change(self, start, removed, added):
         """Called after modification of the text, retokenizes the modified part."""
-        # if the change is in one block, emit a special signal immediately
-        doc = self.document()
-        b = doc.findBlock(start)
-        leftover = b.position() + b.length() - start
-        if leftover > 2:
-            if added < leftover and removed < leftover:
-                if added != removed:
-                    # formats need to be shifted in the current block
-                    self.changed.emit(start, added - removed)
-            else:
-                # formats need to be cleared from start
-                self.changed.emit(start, 0)
-        self.rebuild(doc.toPlainText(), False, start, removed, added)
+        self.rebuild(self.document().toPlainText(), False, start, removed, added)
 
 

@@ -50,7 +50,6 @@ class SyntaxHighlighter(util.SingleInstance):
         self._formatter = None
         self._cursor = None      # remembers the range to rehighlight
         builder.updated.connect(self.slot_updated)
-        builder.changed.connect(self.slot_changed)
         builder.preview.connect(self.slot_preview, Qt.BlockingQueuedConnection)
 
     def builder(self):
@@ -95,61 +94,43 @@ class SyntaxHighlighter(util.SingleInstance):
         """Return the QTextDocument."""
         return self.builder().document()
 
-    def slot_changed(self, start, offset):
-        """Called on small changes, allows for moving the formats, awaiting the tokenizer."""
-        doc = self.document()
-        block = doc.findBlock(start)
-        start -= block.position()
-        formats = block.layout().formats()
-        i = 0
-        hi = len(formats)
-        while i < hi:
-            mid = (i + hi) // 2
-            r = formats[mid]
-            if r.start + r.length <= start:
-                i = mid + 1
-            else:
-                hi = mid
-        if i < len(formats):
-            r = formats[i]
-            if offset == 0:
-                if r.start < start:
-                    del formats[i+1:]
-                else:
-                    del formats[i:]
-            else:
-                if r.start <= start:
-                    # overlap
-                    r.length = max(start - r.start, r.length + offset)
-                    i += 1
-                for r in formats[i:]:
-                    # move whole format
-                    r.start += offset
-                    if r.start < start:
-                        r.length -= start - r.start
-                        r.start = start
-            block.layout().setFormats(formats)
-
     def slot_preview(self, tree):
         """Called when there is a peek preview."""
-        print("peek from highlighter")
-        tree.dump()
+        formatter = self._formatter
+        if formatter:
+            doc = self.document()
+            start = tree.pos
+            end = doc.findBlock(tree.end).position() - 1
+            if start < end:
+                self.draw_highlighting(formatter, tree, start, end)
 
     def slot_updated(self, start, end):
         """Called on update; performs the highlighting."""
         formatter = self._formatter
-        if not formatter:
-            return
+        if formatter:
+            self.draw_highlighting(formatter, self.builder().root, start, end, True)
+
+    def draw_highlighting(self, formatter, root, start, end, interruptible=False):
+        """Draw the highlighting using formatter and tree from start to end.
+
+        If interruptible is True, QApplication::process_events() is called
+        every 1000 lines, to enable the user typing in the document, which also
+        causes the highlighting to quit and resume later.
+
+        """
         doc = self.document()
 
-        c = self._cursor
-        if c:
-            # our previous highlighting run was interrupted, fix it now
-            start = min(start, c.selectionStart())
-            end = max(end, c.selectionEnd())
+        if interruptible:
+            c = self._cursor
+            if c:
+                # our previous highlighting run was interrupted, fix it now
+                start = min(start, c.selectionStart())
+                end = max(end, c.selectionEnd())
+            else:
+                c = self._cursor = QTextCursor(doc)
+                c.setKeepPositionOnInsert(True)
         else:
-            c = self._cursor = QTextCursor(doc)
-            c.setKeepPositionOnInsert(True)
+            c = None
 
         block = doc.findBlock(start)
         pos = block.position()
@@ -158,11 +139,11 @@ class SyntaxHighlighter(util.SingleInstance):
             last_block = doc.lastBlock()
         end = last_block.position() + last_block.length() - 1
 
-        c.setPosition(end)
+        if c:
+            c.setPosition(end)
 
         num = block.blockNumber() + 100
         formats = split_formats(block, start)[0]
-        root = self.builder().root
         for f in formatter.format_ranges(root.context_slices(start, end)):
             while f.pos >= pos + block.length():
                 block.layout().setFormats(formats)
@@ -185,7 +166,7 @@ class SyntaxHighlighter(util.SingleInstance):
                 r.start = 0
             r.length = f_end - pos - r.start
             formats.append(r)
-            if block.blockNumber() > num:
+            if c and block.blockNumber() > num:
                 num = block.blockNumber() + 1000
                 doc.markContentsDirty(start, pos - start)
                 start = pos
@@ -201,7 +182,8 @@ class SyntaxHighlighter(util.SingleInstance):
             block.layout().clearFormats()
         doc.markContentsDirty(start, end - start)
         # we have finished highlighting
-        self._cursor = None
+        if c:
+            self._cursor = None
 
 
 def split_formats(block, position):
