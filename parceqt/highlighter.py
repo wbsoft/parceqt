@@ -204,3 +204,45 @@ class SyntaxHighlighter(util.SingleInstance):
         self._cursor = None
 
 
+def split_formats(block, position):
+    """Return two lists of FormatRange instances from the block's layout.
+
+    The first are the formats from the start of the block until position (which
+    must be inside the block). The second are the formats from the position
+    to the end of the block, shifted as if the block started at position.
+
+    A format range is neatly cut in two when position lies in the middle of
+    a range.
+
+    """
+    def new_format_range(r, offset=0):
+        n = QTextLayout.FormatRange()
+        n.format = r.format
+        n.start = r.start + offset
+        n.length = r.length
+        return n
+    pos = position - block.position()
+    formats = iter(block.layout().formats())
+    start_formats = []
+    end_formats = []
+    for r in formats:
+        if r.start < pos:
+            n = new_format_range(r)
+            start_formats.append(n)
+            if r.start + r.length > pos:
+                n.length = pos - r.start
+                n = new_format_range(r)
+                n.start = 0
+                n.length = r.start + r.length - pos
+                end_formats.append(n)
+                break
+        else:
+            n = new_format_range(r, -pos)
+            end_formats.append(n)
+            break
+    for r in formats:
+        n = new_format_range(r, -pos)
+        end_formats.append(n)
+    return start_formats, end_formats
+
+
