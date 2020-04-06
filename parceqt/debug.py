@@ -72,6 +72,9 @@ class DebugWindow(QMainWindow):
     and the displayed ancestor path.
 
     """
+
+    show_updated_region_enabled = False
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self._clear_timer = QTimer(timeout=self.clear_updated_region, singleShot=True)
@@ -170,7 +173,8 @@ class DebugWindow(QMainWindow):
         self.treeView.unsetCursor()
         self.slot_cursor_position_changed()
         self.statusBar().showMessage(", ".join(lexicon_names(self.builder.lexicons)))
-        self.show_updated_region()
+        if self.show_updated_region_enabled:
+            self.show_updated_region()
 
     def slot_cursor_position_changed(self):
         """Called when the text cursor moved."""
