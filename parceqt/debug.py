@@ -30,7 +30,7 @@ from PyQt5.QtWidgets import (
     QSplitter, QStatusBar, QTextEdit, QTreeView, QVBoxLayout, QWidget,
 )
 
-import parce
+import parce.language
 import parceqt
 import parceqt.highlighter
 import parceqt.treebuilder
@@ -319,6 +319,14 @@ class TreeBuilder(parceqt.treebuilder.TreeBuilder):
         """Reimplemented for fine-grained signals."""
         super().replace_root_lexicon(lexicon)
         self.change_root_lexicon.emit()
+
+
+def root_lexicons():
+    """Get the root lexicons of all languages bundled with parce."""
+    for lang in parce.language.get_all_languages():
+        root = getattr(lang, "root", None)
+        if root:
+            yield root
 
 
 def lexicon_names(lexicons):
