@@ -26,8 +26,9 @@ This module provides a debug window to show/edit text and the tokenized tree.
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
 from PyQt5.QtGui import QColor, QTextCharFormat, QTextCursor, QTextDocument
 from PyQt5.QtWidgets import (
-    QApplication, QHBoxLayout, QMainWindow, QPlainTextEdit, QPushButton,
-    QSplitter, QStatusBar, QTextEdit, QTreeView, QVBoxLayout, QWidget,
+    QApplication, QComboBox, QHBoxLayout, QMainWindow, QPlainTextEdit,
+    QPushButton, QSplitter, QStatusBar, QTextEdit, QTreeView, QVBoxLayout,
+    QWidget,
 )
 
 import parce.language
@@ -231,39 +232,33 @@ class AncestorView(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._clicking = parceqt.util.Switch()
-        layout = QHBoxLayout(margin=0, spacing=0)
-        self.setLayout(layout)
-        self.root_button = QPushButton(self)
-        layout.addWidget(self.root_button)
+        self.setLayout(QHBoxLayout(margin=0, spacing=0))
         self.clear()
 
     def clear(self):
-        self.root_button.setText("...")
         layout = self.layout()
-        item = layout.takeAt(1)
+        item = layout.takeAt(0)
         while item:
             widget = item.widget()
             if widget:
                 widget.deleteLater()
-            item = layout.takeAt(1)
-        layout.addStretch(10)
+            item = layout.takeAt(0)
 
     def set_token_path(self, token):
         if self._clicking:
             return # don't redraw if the cursor moved because of us
         self.clear()
         layout = self.layout()
-        layout.takeAt(1)
+
         nodes = [token]
         nodes.extend(token.ancestors())
+        del nodes[-1]   # leave out the root context
         nodes.reverse()
         names = list(lexicon_names(n.lexicon for n in nodes[:-1]))
         names.append(repr(token.action))
         tooltip = parceqt.treemodel.TreeModel.node_tooltip
-        tooltips = list(tooltip(n) for n in nodes[1:])
-        self.root_button.setText(names[0])
-        self.root_button.setToolTip(tooltip(nodes[0]))
-        for node, name, tip in zip(nodes[1:], names[1:], tooltips):
+        tooltips = list(map(tooltip, nodes))
+        for node, name, tip in zip(nodes, names, tooltips):
             button = QPushButton(self)
             button.setMinimumWidth(8)
             def activate(node=node):
