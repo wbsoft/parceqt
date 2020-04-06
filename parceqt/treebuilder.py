@@ -47,6 +47,9 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
     started = pyqtSignal()          #: emitted when a new update job started
     updated = pyqtSignal(int, int)  #: emitted when one full run finished
     changed = pyqtSignal(int, int)  #: emitted when a contents change falls in one block
+    preview = pyqtSignal(object)    #: emitted with premature tree when peek_threshold is reached
+
+    peek_threshold = 250
 
     def __init__(self, document, root_lexicon=None):
         QObject.__init__(self, document)
@@ -95,6 +98,10 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
             loop = QEventLoop()
             self.updated.connect(loop.quit)
             loop.exec_()
+
+    def peek(self, tree):
+        """Reimplemented to get a sneak preview."""
+        self.preview.emit(tree)
 
     def root_lexicon(self):
         """Return the current root lexicon."""

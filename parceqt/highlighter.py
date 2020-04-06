@@ -51,6 +51,7 @@ class SyntaxHighlighter(util.SingleInstance):
         self._cursor = None      # remembers the range to rehighlight
         builder.updated.connect(self.slot_updated)
         builder.changed.connect(self.slot_changed)
+        builder.preview.connect(self.slot_preview, Qt.BlockingQueuedConnection)
 
     def builder(self):
         """Return the builder we were instantiated with."""
@@ -128,6 +129,11 @@ class SyntaxHighlighter(util.SingleInstance):
                         r.length -= start - r.start
                         r.start = start
             block.layout().setFormats(formats)
+
+    def slot_preview(self, tree):
+        """Called when there is a peek preview."""
+        print("peek from highlighter")
+        tree.dump()
 
     def slot_updated(self, start, end):
         """Called on update; performs the highlighting."""
