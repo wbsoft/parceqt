@@ -152,7 +152,7 @@ class SyntaxHighlighter(util.SingleInstance):
             c.setKeepPositionOnInsert(True)
 
         block = doc.findBlock(start)
-        start = pos = block.position()
+        pos = block.position()
         last_block = doc.findBlock(end)
         if not last_block.isValid():
             last_block = doc.lastBlock()
@@ -161,7 +161,7 @@ class SyntaxHighlighter(util.SingleInstance):
         c.setPosition(end)
 
         num = block.blockNumber() + 100
-        formats = []
+        formats = split_formats(block, start)[0]
         root = self.builder().root
         for f in formatter.format_ranges(root.context_slices(start, end)):
             while f.pos >= pos + block.length():
