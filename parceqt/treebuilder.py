@@ -48,7 +48,7 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
     updated = pyqtSignal(int, int)  #: emitted when one full run finished
     preview = pyqtSignal(object)    #: emitted with premature tree when peek_threshold is reached
 
-    peek_threshold = 500
+    peek_threshold = 1000
 
     def __init__(self, document, root_lexicon=None):
         QObject.__init__(self, document)
