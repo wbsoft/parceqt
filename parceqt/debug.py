@@ -126,6 +126,7 @@ class DebugWindow(QMainWindow):
         self.treeView.clicked.connect(self.slot_item_clicked)
 
         self.textEdit.setFocus()
+        self.set_theme()
 
     def create_model(self):
         """Instantiate a tree model for the tree view."""
