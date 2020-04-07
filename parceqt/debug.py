@@ -269,10 +269,10 @@ class AncestorView(QWidget):
 
         nodes = [token]
         nodes.extend(token.ancestors())
-        del nodes[-1]   # leave out the root context
         nodes.reverse()
         names = list(lexicon_names(n.lexicon for n in nodes[:-1]))
         names.append(repr(token.action))
+        del nodes[0], names[0]
         tooltips = map(parceqt.treemodel.TreeModel.node_tooltip, nodes)
         for node, name, tip in zip(nodes, names, tooltips):
             button = QPushButton(self)
@@ -298,8 +298,9 @@ class LexiconChooser(QComboBox):
     def populate(self):
         """Populate the combobox with the available root lexicons in parce."""
         self.clear()
-        self.lexicons = list(root_lexicons())
-        self.addItems([l.name() for l in self.lexicons])
+        self.lexicons = [None]
+        self.lexicons.extend(root_lexicons())
+        self.addItems(map(repr, self.lexicons))
 
     def set_root_lexicon(self, lexicon):
         """Set the current root lexicon, may also be a new one, which is appended then."""
@@ -308,7 +309,7 @@ class LexiconChooser(QComboBox):
         except ValueError:
             i = len(self.lexicons)
             self.lexicons.append(lexicon)
-            self.addItem(lexicon.name())
+            self.addItem(repr(lexicon))
         self.setCurrentIndex(i)
 
     def root_lexicon(self):
