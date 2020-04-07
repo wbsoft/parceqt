@@ -193,7 +193,7 @@ class TreeModel(QAbstractItemModel):
         #self.dataChanged.emit(topleft, bottomright)
 
     def slot_change_root_lexicon(self):
-        self.dataChanged.emit(QModelIndex(), QModelIndex())
+        self.headerDataChanged.emit(Qt.Horizontal, 0, 0)
 
     @staticmethod
     def node_dict(node):
