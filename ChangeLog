@@ -2,9 +2,11 @@ ChangeLog
 =========
 
 
-current:
+2020-04-07: parceqt-0.8.0
 
 - added treemodel.TreeModel
+- added debug module with debugger window
+- use new peek feature to quickly update highlighting surrounding change
 
 
 2020-03-14: parceqt-0.7.0
