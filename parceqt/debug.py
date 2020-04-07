@@ -343,6 +343,8 @@ class Actions:
     def create_actions(self):
         self.file_open = QAction()
         self.view_tree = QAction(checkable=True)
+        self.view_tree_expand = QAction()
+        self.view_tree_collapse = QAction()
         self.view_updated_region = QAction(checkable=True)
         self.view_theme = QAction()
         m = QMenu()
@@ -353,13 +355,13 @@ class Actions:
             a.setText(name)
             m.addAction(a)
 
-    def set_action_texts(self, _=None):
-        if _ is None:
-            _ = lambda *t: t[0]
-        self.file_open.setText(_("&Open File..."))
-        self.view_tree.setText(_("Show &Tree Structure"))
-        self.view_updated_region.setText(_("Show &Updated Region"))
-        self.view_theme.setText(_("T&heme"))
+    def set_action_texts(self):
+        self.file_open.setText("&Open File...")
+        self.view_tree.setText("Show &Tree Structure")
+        self.view_tree_expand.setText("&Expand All")
+        self.view_tree_collapse.setText("&Collapse All")
+        self.view_updated_region.setText("Show &Updated Region")
+        self.view_theme.setText("T&heme")
 
     def set_action_shortcuts(self):
         self.file_open.setShortcut(QKeySequence("Ctrl+O"))
@@ -377,15 +379,21 @@ class Actions:
         filemenu = QMenu("&File", menubar)
         filemenu.addAction(self.file_open)
         viewmenu = QMenu("&View", menubar)
-        viewmenu.addAction(self.view_tree)
-        viewmenu.addAction(self.view_updated_region)
         viewmenu.addAction(self.view_theme)
+        viewmenu.addSeparator()
+        viewmenu.addAction(self.view_tree)
+        viewmenu.addAction(self.view_tree_expand)
+        viewmenu.addAction(self.view_tree_collapse)
+        viewmenu.addSeparator()
+        viewmenu.addAction(self.view_updated_region)
         menubar.addMenu(filemenu)
         menubar.addMenu(viewmenu)
 
     def connect_actions(self):
         self.file_open.triggered.connect(self.open_file)
         self.view_tree.triggered.connect(self.toggle_tree_visibility)
+        self.view_tree_expand.triggered.connect(self.tree_expand_all)
+        self.view_tree_collapse.triggered.connect(self.tree_collapse_all)
         self.view_updated_region.triggered.connect(self.toggle_updated_region_visibility)
         self.view_theme_actiongroup.triggered.connect(self.slot_view_theme_selected)
 
@@ -402,6 +410,12 @@ class Actions:
 
     def slot_view_theme_selected(self, action):
         self.mainwindow.set_theme(action.text())
+
+    def tree_expand_all(self):
+        self.mainwindow.treeView.expandAll()
+
+    def tree_collapse_all(self):
+        self.mainwindow.treeView.collapseAll()
 
 
 class TreeBuilder(parceqt.treebuilder.TreeBuilder):

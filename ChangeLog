@@ -2,6 +2,11 @@ ChangeLog
 =========
 
 
+current:
+
+- debug window: add expand/collapse actions
+
+
 2020-04-07: parceqt-0.8.0
 
 - added treemodel.TreeModel
