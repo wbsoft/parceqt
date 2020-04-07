@@ -24,11 +24,13 @@ This module provides a debug window to show/edit text and the tokenized tree.
 """
 
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
-from PyQt5.QtGui import QColor, QTextCharFormat, QTextCursor, QTextDocument
+from PyQt5.QtGui import (
+    QColor, QKeySequence, QTextCharFormat, QTextCursor, QTextDocument,
+)
 from PyQt5.QtWidgets import (
-    QApplication, QComboBox, QHBoxLayout, QMainWindow, QPlainTextEdit,
-    QPushButton, QSplitter, QStatusBar, QTextEdit, QTreeView, QVBoxLayout,
-    QWidget,
+    QAction, QApplication, QComboBox, QFileDialog, QHBoxLayout, QMainWindow,
+    QMenu, QMenuBar, QPlainTextEdit, QPushButton, QSplitter, QStatusBar,
+    QTextEdit, QTreeView, QVBoxLayout, QWidget,
 )
 
 import parce.language
@@ -79,6 +81,9 @@ class DebugWindow(QMainWindow):
         super().__init__(parent)
         self._clear_timer = QTimer(timeout=self.clear_updated_region, singleShot=True)
 
+        self._actions = Actions(self)
+        self._actions.add_menus(self.menuBar())
+
         widget = QWidget(self)
         self.setCentralWidget(widget)
         layout = QVBoxLayout(margin=4, spacing=2)
@@ -123,9 +128,11 @@ class DebugWindow(QMainWindow):
 
     def create_model(self):
         """Instantiate a tree model for the tree view."""
-        m = parceqt.treemodel.TreeModel(self.builder.root)
-        m.connect_debugging_builder(self.builder)
-        self.treeView.setModel(m)
+        m = self.treeView.model()
+        if not m:
+            m = parceqt.treemodel.TreeModel(self.builder.root)
+            m.connect_debugging_builder(self.builder)
+            self.treeView.setModel(m)
 
     def delete_model(self):
         """Delete the model and remove it from the tree."""
@@ -319,6 +326,62 @@ class LexiconChooser(QComboBox):
     def slot_current_index_changed(self, i):
         """Called on index change, emits the lexicon_changed signal."""
         self.lexicon_changed.emit(self.lexicons[i])
+
+
+class Actions:
+    """Container for all the QActions and their implementations."""
+    def __init__(self, mainwindow):
+        self.mainwindow = mainwindow
+        self.create_actions()
+        self.set_action_defaults()
+        self.connect_actions()
+        self.set_action_texts()
+        self.set_action_shortcuts()
+
+    def create_actions(self):
+        self.file_open = QAction()
+        self.view_tree = QAction(checkable=True)
+        self.view_updated_region = QAction(checkable=True)
+
+    def set_action_texts(self, _=None):
+        if _ is None:
+            _ = lambda *t: t[0]
+        self.file_open.setText(_("&Open File..."))
+        self.view_tree.setText(_("Show &Tree Structure"))
+        self.view_updated_region.setText(_("Show &Updated Region"))
+
+    def set_action_shortcuts(self):
+        self.file_open.setShortcut(QKeySequence("Ctrl+O"))
+
+    def set_action_defaults(self):
+        self.view_tree.setChecked(True)
+        self.view_updated_region.setChecked(False)
+
+    def add_menus(self, menubar):
+        """Create and return a menu bar."""
+        filemenu = QMenu("File", menubar)
+        filemenu.addAction(self.file_open)
+        viewmenu = QMenu("View", menubar)
+        viewmenu.addAction(self.view_tree)
+        viewmenu.addAction(self.view_updated_region)
+        menubar.addMenu(filemenu)
+        menubar.addMenu(viewmenu)
+
+    def connect_actions(self):
+        self.file_open.triggered.connect(self.open_file)
+        self.view_tree.triggered.connect(self.toggle_tree_visibility)
+        self.view_updated_region.triggered.connect(self.toggle_updated_region_visibility)
+
+    def open_file(self):
+        filename, filetype = QFileDialog.getOpenFileName(self.mainwindow, "Open File")
+        if filename:
+            self.mainwindow.set_text(open(filename).read())
+
+    def toggle_tree_visibility(self, checked):
+        self.mainwindow.create_model() if checked else self.mainwindow.delete_model()
+
+    def toggle_updated_region_visibility(self, checked):
+        self.mainwindow.show_updated_region_enabled = checked
 
 
 class TreeBuilder(parceqt.treebuilder.TreeBuilder):
