@@ -28,12 +28,13 @@ from PyQt5.QtGui import (
     QColor, QKeySequence, QTextCharFormat, QTextCursor, QTextDocument,
 )
 from PyQt5.QtWidgets import (
-    QAction, QApplication, QComboBox, QFileDialog, QHBoxLayout, QMainWindow,
-    QMenu, QMenuBar, QPlainTextEdit, QPushButton, QSplitter, QStatusBar,
-    QTextEdit, QTreeView, QVBoxLayout, QWidget,
+    QAction, QActionGroup, QApplication, QComboBox, QFileDialog, QHBoxLayout,
+    QMainWindow, QMenu, QMenuBar, QPlainTextEdit, QPushButton, QSplitter,
+    QStatusBar, QTextEdit, QTreeView, QVBoxLayout, QWidget,
 )
 
 import parce.language
+import parce.themes
 import parceqt
 import parceqt.highlighter
 import parceqt.treebuilder
@@ -342,6 +343,10 @@ class Actions:
         self.file_open = QAction()
         self.view_tree = QAction(checkable=True)
         self.view_updated_region = QAction(checkable=True)
+        g = self.view_theme_actiongroup = QActionGroup(None)
+        for name in parce.themes.get_all_themes():
+            a = QAction(g, checkable=True)
+            a.setText(name)
 
     def set_action_texts(self, _=None):
         if _ is None:
@@ -356,14 +361,21 @@ class Actions:
     def set_action_defaults(self):
         self.view_tree.setChecked(True)
         self.view_updated_region.setChecked(False)
+        for a in self.view_theme_actiongroup.actions():
+            if a.text() == "default":
+                a.setChecked(True)
 
     def add_menus(self, menubar):
         """Create and return a menu bar."""
-        filemenu = QMenu("File", menubar)
+        filemenu = QMenu("&File", menubar)
         filemenu.addAction(self.file_open)
-        viewmenu = QMenu("View", menubar)
+        viewmenu = QMenu("&View", menubar)
         viewmenu.addAction(self.view_tree)
         viewmenu.addAction(self.view_updated_region)
+        view_theme = QMenu("T&heme", viewmenu)
+        viewmenu.addMenu(view_theme)
+        for a in self.view_theme_actiongroup.actions():
+            view_theme.addAction(a)
         menubar.addMenu(filemenu)
         menubar.addMenu(viewmenu)
 
@@ -371,6 +383,7 @@ class Actions:
         self.file_open.triggered.connect(self.open_file)
         self.view_tree.triggered.connect(self.toggle_tree_visibility)
         self.view_updated_region.triggered.connect(self.toggle_updated_region_visibility)
+        self.view_theme_actiongroup.triggered.connect(self.slot_view_theme_selected)
 
     def open_file(self):
         filename, filetype = QFileDialog.getOpenFileName(self.mainwindow, "Open File")
@@ -382,6 +395,9 @@ class Actions:
 
     def toggle_updated_region_visibility(self, checked):
         self.mainwindow.show_updated_region_enabled = checked
+
+    def slot_view_theme_selected(self, action):
+        self.mainwindow.set_theme(action.text())
 
 
 class TreeBuilder(parceqt.treebuilder.TreeBuilder):
