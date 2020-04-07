@@ -343,10 +343,14 @@ class Actions:
         self.file_open = QAction()
         self.view_tree = QAction(checkable=True)
         self.view_updated_region = QAction(checkable=True)
+        self.view_theme = QAction()
+        m = QMenu()
+        self.view_theme.setMenu(m)
         g = self.view_theme_actiongroup = QActionGroup(None)
         for name in parce.themes.get_all_themes():
             a = QAction(g, checkable=True)
             a.setText(name)
+            m.addAction(a)
 
     def set_action_texts(self, _=None):
         if _ is None:
@@ -354,6 +358,7 @@ class Actions:
         self.file_open.setText(_("&Open File..."))
         self.view_tree.setText(_("Show &Tree Structure"))
         self.view_updated_region.setText(_("Show &Updated Region"))
+        self.view_theme.setText(_("T&heme"))
 
     def set_action_shortcuts(self):
         self.file_open.setShortcut(QKeySequence("Ctrl+O"))
@@ -364,6 +369,7 @@ class Actions:
         for a in self.view_theme_actiongroup.actions():
             if a.text() == "default":
                 a.setChecked(True)
+                break
 
     def add_menus(self, menubar):
         """Create and return a menu bar."""
@@ -372,10 +378,7 @@ class Actions:
         viewmenu = QMenu("&View", menubar)
         viewmenu.addAction(self.view_tree)
         viewmenu.addAction(self.view_updated_region)
-        view_theme = QMenu("T&heme", viewmenu)
-        viewmenu.addMenu(view_theme)
-        for a in self.view_theme_actiongroup.actions():
-            view_theme.addAction(a)
+        viewmenu.addAction(self.view_theme)
         menubar.addMenu(filemenu)
         menubar.addMenu(viewmenu)
 
