@@ -173,6 +173,8 @@ class DebugWindow(QMainWindow):
         self.treeView.unsetCursor()
         self.slot_cursor_position_changed()
         self.statusBar().showMessage(", ".join(lexicon_names(self.builder.lexicons)))
+        tree = self.builder.get_root()
+        self.lexiconChooser.setToolTip(parceqt.treemodel.TreeModel.node_tooltip(tree))
         if self.show_updated_region_enabled:
             self.show_updated_region()
 
@@ -271,8 +273,7 @@ class AncestorView(QWidget):
         nodes.reverse()
         names = list(lexicon_names(n.lexicon for n in nodes[:-1]))
         names.append(repr(token.action))
-        tooltip = parceqt.treemodel.TreeModel.node_tooltip
-        tooltips = list(map(tooltip, nodes))
+        tooltips = map(parceqt.treemodel.TreeModel.node_tooltip, nodes)
         for node, name, tip in zip(nodes, names, tooltips):
             button = QPushButton(self)
             button.setMinimumWidth(8)
