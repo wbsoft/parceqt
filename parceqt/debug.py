@@ -154,10 +154,8 @@ class DebugWindow(QMainWindow):
 
     def set_theme(self, theme="default", adjust_widget=True):
         """Set the theme to use for the text edit."""
-        h = parceqt.highlighter.SyntaxHighlighter.instance(self.builder)
         if isinstance(theme, str):
              theme = parce.theme_by_name(theme)
-        h.set_theme(theme)
         if adjust_widget:
             if theme:
                 f = parceqt.formatter.Formatter(theme)
@@ -168,6 +166,8 @@ class DebugWindow(QMainWindow):
             else:
                 self.textEdit.setFont(QApplication.font(w))
                 self.textEdit.setPalette(QApplication.palette(w))
+        h = parceqt.highlighter.SyntaxHighlighter.instance(self.builder)
+        h.set_theme(theme)
 
     def adjust_widget(self):
         """Adjust the text edit's palette to the theme."""

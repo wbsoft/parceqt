@@ -94,12 +94,11 @@ class SyntaxHighlighter(util.SingleInstance):
         """Return the QTextDocument."""
         return self.builder().document()
 
-    def slot_preview(self, tree):
+    def slot_preview(self, start, tree):
         """Called when there is a peek preview."""
         formatter = self._formatter
         if formatter:
             doc = self.document()
-            start = tree.pos
             end = doc.findBlock(tree.end).position() - 1
             if start < end:
                 self.draw_highlighting(formatter, tree, start, end)
