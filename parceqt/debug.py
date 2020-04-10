@@ -508,3 +508,22 @@ def get_slice(context, slice_):
     elif end < 0:
         end += total
     return start, end
+
+
+if __name__ == '__main__':
+    a = QApplication([])
+    w = DebugWindow()
+    w.resize(900, 550)
+    w.show()
+    import sys
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
+        try:
+            text = open(filename).read()
+        except UnicodeError:
+            text = open(filename, encoding="latin1").read()
+        root_lexicon = parce.find(filename=filename, contents=text)
+        w.set_root_lexicon(root_lexicon)
+        w.set_text(text)
+    sys.exit(a.exec_())
+

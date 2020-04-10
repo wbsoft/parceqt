@@ -5,6 +5,7 @@ ChangeLog
 current:
 
 - debug window: add expand/collapse actions
+- ability to run the debug window with python3 -m parceqt.debug <filename>
 
 
 2020-04-07: parceqt-0.8.0
