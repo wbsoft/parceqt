@@ -164,8 +164,8 @@ class DebugWindow(QMainWindow):
                     self.textEdit.setFont(font)
                 self.textEdit.setPalette(f.palette())
             else:
-                self.textEdit.setFont(QApplication.font(w))
-                self.textEdit.setPalette(QApplication.palette(w))
+                self.textEdit.setFont(QApplication.font(self))
+                self.textEdit.setPalette(QApplication.palette(self))
         h = parceqt.highlighter.SyntaxHighlighter.instance(self.builder)
         h.set_theme(theme)
 
