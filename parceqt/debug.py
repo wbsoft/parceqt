@@ -21,6 +21,15 @@
 """
 This module provides a debug window to show/edit text and the tokenized tree.
 
+Use::
+
+    $ python3 -m parceqt.debug  <filename>
+
+You can also create a debug window in an interactive session; see the class
+documentation.
+
+The debug window shows highlighted text, and the tokenized tree structure.
+
 """
 
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
