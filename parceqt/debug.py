@@ -32,7 +32,11 @@ The debug window shows highlighted text, and the tokenized tree structure.
 
 """
 
-from PyQt5.QtCore import pyqtSignal, Qt, QTimer
+
+import operator
+import weakref
+
+from PyQt5.QtCore import pyqtSignal, QObject, Qt, QTimer
 from PyQt5.QtGui import (
     QColor, QKeySequence, QTextCharFormat, QTextCursor, QTextDocument,
 )
@@ -89,7 +93,9 @@ class DebugWindow(QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._clear_timer = QTimer(timeout=self.clear_updated_region, singleShot=True)
+
+        f = self._updated_format = QTextCharFormat()
+        f.setBackground(QColor("palegreen"))
 
         self._actions = Actions(self)
         self._actions.add_menus(self.menuBar())
@@ -118,6 +124,8 @@ class DebugWindow(QMainWindow):
         splitter.addWidget(self.treeView)
         splitter.setStretchFactor(0, 3)
         splitter.setStretchFactor(1, 2)
+
+        self.extraSelectionManager = ExtraSelectionManager(self.textEdit)
 
         self.document = d = self.textEdit.document()
         self.textEdit.setDocument(self.document)
@@ -255,13 +263,7 @@ class DebugWindow(QMainWindow):
         c = QTextCursor(self.document)
         c.setPosition(end)
         c.setPosition(self.builder.start, QTextCursor.KeepAnchor)
-        f = QTextCharFormat()
-        f.setBackground(QColor("palegreen"))
-        es = QTextEdit.ExtraSelection()
-        es.cursor = c
-        es.format = f
-        self.textEdit.setExtraSelections([es])
-        self._clear_timer.start(2000)
+        self.extraSelectionManager.highlight(self._updated_format, [c], msec=2000)
 
     def clear_updated_region(self):
         self.textEdit.setExtraSelections([])
@@ -438,6 +440,70 @@ class Actions:
 
     def tree_collapse_all(self):
         self.mainwindow.treeView.collapseAll()
+
+
+class ExtraSelectionManager(QObject):
+    """Manages highlighting of arbitrary sections in a Q(Plain)TextEdit.
+
+    Stores and highlights lists of QTextCursors on a per-format basis.
+
+    """
+    def __init__(self, edit):
+        """Initializes ourselves with a Q(Plain)TextEdit as parent."""
+        QObject.__init__(self, edit)
+        self._selections = {}
+        self._formats = {} # store the QTextFormats
+
+    def highlight(self, text_format, cursors, priority=0, msec=0):
+        """Highlights the selection of an arbitrary list of QTextCursors.
+
+        ``text_format`` is a QTextCharFormat; ``priority`` determines the order
+        of drawing, highlighting with higher priority is drawn over
+        highlighting with lower priority. ``msec``, if > 0, removes the
+        highlighting after that many milliseconds.
+
+        """
+        key = id(text_format)
+        self._formats[key] = text_format
+        selections = []
+        for cursor in cursors:
+            es = QTextEdit.ExtraSelection()
+            es.cursor = cursor
+            es.format = text_format
+            selections.append(es)
+        if msec:
+            def clear(selfref=weakref.ref(self)):
+                self = selfref()
+                if self:
+                    self.clear(text_format)
+            timer = QTimer(timeout=clear, singleShot=True)
+            timer.start(msec)
+            self._selections[key] = (priority, selections, timer)
+        else:
+            self._selections[key] = (priority, selections)
+        self.update()
+
+    def clear(self, text_format):
+        """Removes the highlighting for the given QTextCharFormat."""
+        key = id(text_format)
+        try:
+            del self._formats[key]
+        except KeyError:
+            pass
+        try:
+            del self._selections[key]
+        except KeyError:
+            pass
+        else:
+            self.update()
+
+    def update(self):
+        """(Internal) Called whenever the arbitrary highlighting changes."""
+        textedit = self.parent()
+        if textedit:
+            selections = sorted(self._selections.values(), key=operator.itemgetter(0))
+            ess = sum(map(operator.itemgetter(1), selections), [])
+            textedit.setExtraSelections(ess)
 
 
 class TreeBuilder(parceqt.treebuilder.TreeBuilder):
