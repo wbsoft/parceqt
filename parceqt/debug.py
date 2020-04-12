@@ -226,6 +226,7 @@ class DebugWindow(QMainWindow):
             self.ancestorView.clear()
 
     def slot_item_clicked(self, index):
+        """Called when a node in the tree view is clicked."""
         tree = self.builder.get_root()
         if tree:
             model = self.treeView.model()
@@ -238,6 +239,7 @@ class DebugWindow(QMainWindow):
         self.textEdit.setFocus()
 
     def slot_node_clicked(self, node):
+        """Called when a button in the ancestor view is clicked."""
         tree = self.builder.get_root()
         if tree and node.root() is tree:
             cursor = self.textEdit.textCursor()
@@ -252,9 +254,11 @@ class DebugWindow(QMainWindow):
                 self.treeView.setCurrentIndex(index)
 
     def slot_root_lexicon_changed(self, lexicon):
+        """Called when the root lexicon is changed."""
         self.builder.set_root_lexicon(lexicon)
 
     def show_updated_region(self):
+        """Highlight the updated region for 2 seconds."""
         end = self.builder.end
         if end >= self.document.characterCount() - 1:
             end = self.document.characterCount() - 1
@@ -280,6 +284,7 @@ class AncestorView(QWidget):
         self.clear()
 
     def clear(self):
+        """Delete all buttons."""
         layout = self.layout()
         item = layout.takeAt(0)
         while item:
@@ -289,6 +294,7 @@ class AncestorView(QWidget):
             item = layout.takeAt(0)
 
     def set_token_path(self, token):
+        """Create buttons for the token and its ancestors."""
         if self._clicking:
             return # don't redraw if the cursor moved because of us
         self.clear()
@@ -421,24 +427,30 @@ class Actions:
         self.view_theme_actiongroup.triggered.connect(self.slot_view_theme_selected)
 
     def open_file(self):
+        """Implementation of Open File action."""
         filename, filetype = QFileDialog.getOpenFileName(self.mainwindow, "Open File")
         if filename:
             self.mainwindow.open_file(filename)
 
     def toggle_tree_visibility(self, checked):
+        """Handle Show Tree Structure checkbox toggle."""
         self.mainwindow.create_model() if checked else self.mainwindow.delete_model()
 
     def toggle_updated_region_visibility(self, checked):
+        """Handle Show Updated Region checkbox toggle."""
         self.mainwindow.show_updated_region_enabled = checked
 
     def slot_view_theme_selected(self, action):
+        """Switch to the selected theme."""
         theme = None if action.objectName() == "None" else action.text()
         self.mainwindow.set_theme(theme)
 
     def tree_expand_all(self):
+        """Implementation of Expand All action."""
         self.mainwindow.treeView.expandAll()
 
     def tree_collapse_all(self):
+        """Implementation of Collapse All action."""
         self.mainwindow.treeView.collapseAll()
 
 
