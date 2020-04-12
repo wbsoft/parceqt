@@ -366,6 +366,11 @@ class Actions:
         m = QMenu()
         self.view_theme.setMenu(m)
         g = self.view_theme_actiongroup = QActionGroup(None)
+        a = QAction(g, checkable=True)
+        a.setText("None")
+        a.setObjectName("None")
+        m.addAction(a)
+        m.addSeparator()
         for name in parce.themes.get_all_themes():
             a = QAction(g, checkable=True)
             a.setText(name)
@@ -425,7 +430,8 @@ class Actions:
         self.mainwindow.show_updated_region_enabled = checked
 
     def slot_view_theme_selected(self, action):
-        self.mainwindow.set_theme(action.text())
+        theme = None if action.objectName() == "None" else action.text()
+        self.mainwindow.set_theme(theme)
 
     def tree_expand_all(self):
         self.mainwindow.treeView.expandAll()
