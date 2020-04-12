@@ -152,6 +152,13 @@ class DebugWindow(QMainWindow):
         """Set the root lexicon to use."""
         self.lexiconChooser.set_root_lexicon(lexicon)
 
+    def open_file(self, filename):
+        """Read a file from disk and guess the language."""
+        text = read_file(filename)
+        root_lexicon = parce.find(filename=filename, contents=text)
+        self.set_text(text)
+        self.set_root_lexicon(root_lexicon)
+
     def set_theme(self, theme="default", adjust_widget=True):
         """Set the theme to use for the text edit."""
         if isinstance(theme, str):
@@ -400,7 +407,7 @@ class Actions:
     def open_file(self):
         filename, filetype = QFileDialog.getOpenFileName(self.mainwindow, "Open File")
         if filename:
-            self.mainwindow.set_text(open(filename).read())
+            self.mainwindow.open_file(filename)
 
     def toggle_tree_visibility(self, checked):
         self.mainwindow.create_model() if checked else self.mainwindow.delete_model()
@@ -510,6 +517,14 @@ def get_slice(context, slice_):
     return start, end
 
 
+def read_file(filename):
+    """Read the contents of a file, if the encoding fails, read in latin1."""
+    try:
+        return open(filename).read()
+    except UnicodeError:
+        return open(filename, encoding="latin1").read()
+
+
 if __name__ == '__main__':
     a = QApplication([])
     w = DebugWindow()
@@ -517,13 +532,6 @@ if __name__ == '__main__':
     w.show()
     import sys
     if len(sys.argv) > 1:
-        filename = sys.argv[1]
-        try:
-            text = open(filename).read()
-        except UnicodeError:
-            text = open(filename, encoding="latin1").read()
-        root_lexicon = parce.find(filename=filename, contents=text)
-        w.set_root_lexicon(root_lexicon)
-        w.set_text(text)
+        w.open_file(sys.argv[1])
     sys.exit(a.exec_())
 
