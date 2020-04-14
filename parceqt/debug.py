@@ -435,6 +435,7 @@ class Actions:
     def toggle_tree_visibility(self, checked):
         """Handle Show Tree Structure checkbox toggle."""
         self.mainwindow.create_model() if checked else self.mainwindow.delete_model()
+        self.mainwindow.treeView.setVisible(checked)
 
     def toggle_updated_region_visibility(self, checked):
         """Handle Show Updated Region checkbox toggle."""
