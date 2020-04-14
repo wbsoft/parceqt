@@ -394,6 +394,7 @@ class Actions:
 
     def set_action_shortcuts(self):
         self.file_open.setShortcut(QKeySequence("Ctrl+O"))
+        self.view_tree.setShortcut(QKeySequence("Ctrl+T"))
 
     def set_action_defaults(self):
         self.view_tree.setChecked(True)
