@@ -186,6 +186,7 @@ class DebugWindow(QMainWindow):
                 f = parceqt.formatter.Formatter(theme)
                 font = f.font()
                 if font:
+                    font.setPointSize(self.textEdit.font().pointSizeF())
                     self.textEdit.setFont(font)
                 self.textEdit.setPalette(f.palette())
             else:
