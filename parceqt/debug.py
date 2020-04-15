@@ -371,6 +371,7 @@ class Actions:
         self.view_tree_collapse = QAction()
         self.view_updated_region = QAction(checkable=True)
         self.view_theme = QAction()
+        self.view_theme_reload = QAction()
         m = QMenu()
         self.view_theme.setMenu(m)
         g = self.view_theme_actiongroup = QActionGroup(None)
@@ -383,6 +384,8 @@ class Actions:
             a = QAction(g, checkable=True)
             a.setText(name)
             m.addAction(a)
+        m.addSeparator()
+        m.addAction(self.view_theme_reload)
 
     def set_action_texts(self):
         self.file_open.setText("&Open File...")
@@ -391,10 +394,12 @@ class Actions:
         self.view_tree_collapse.setText("&Collapse All")
         self.view_updated_region.setText("Show &Updated Region")
         self.view_theme.setText("T&heme")
+        self.view_theme_reload.setText("&Reload Theme")
 
     def set_action_shortcuts(self):
         self.file_open.setShortcut(QKeySequence("Ctrl+O"))
         self.view_tree.setShortcut(QKeySequence("Ctrl+T"))
+        self.view_theme_reload.setShortcut(QKeySequence("F5"))
 
     def set_action_defaults(self):
         self.view_tree.setChecked(True)
@@ -426,6 +431,7 @@ class Actions:
         self.view_tree_collapse.triggered.connect(self.tree_collapse_all)
         self.view_updated_region.triggered.connect(self.toggle_updated_region_visibility)
         self.view_theme_actiongroup.triggered.connect(self.slot_view_theme_selected)
+        self.view_theme_reload.triggered.connect(self.reload_theme)
 
     def open_file(self):
         """Implementation of Open File action."""
@@ -454,6 +460,12 @@ class Actions:
     def tree_collapse_all(self):
         """Implementation of Collapse All action."""
         self.mainwindow.treeView.collapseAll()
+
+    def reload_theme(self):
+        """Reload the theme."""
+        action = self.view_theme_actiongroup.checkedAction()
+        if action:
+            self.slot_view_theme_selected(action)
 
 
 class ExtraSelectionManager(QObject):
