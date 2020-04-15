@@ -36,7 +36,7 @@ The debug window shows highlighted text, and the tokenized tree structure.
 import operator
 import weakref
 
-from PyQt5.QtCore import pyqtSignal, QObject, Qt, QTimer
+from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QTimer
 from PyQt5.QtGui import (
     QColor, QKeySequence, QTextCharFormat, QTextCursor, QTextDocument,
 )
@@ -117,7 +117,7 @@ class DebugWindow(QMainWindow):
         splitter = QSplitter(self, orientation=Qt.Horizontal)
         layout.addWidget(splitter, 100)
 
-        self.textEdit = QPlainTextEdit()
+        self.textEdit = QPlainTextEdit(lineWrapMode=QPlainTextEdit.NoWrap)
         self.treeView = QTreeView()
 
         splitter.addWidget(self.textEdit)
@@ -135,6 +135,7 @@ class DebugWindow(QMainWindow):
         self.create_model()
 
         # signal connections
+        self.textEdit.viewport().installEventFilter(self)
         self.lexiconChooser.lexicon_changed.connect(self.slot_root_lexicon_changed)
         self.ancestorView.node_clicked.connect(self.slot_node_clicked)
         b.started.connect(self.slot_build_started)
@@ -271,6 +272,16 @@ class DebugWindow(QMainWindow):
 
     def clear_updated_region(self):
         self.textEdit.setExtraSelections([])
+
+    def eventFilter(self, obj, ev):
+        """Implemented to support Ctrl+wheel zooming."""
+        if ev.type() == QEvent.Wheel and ev.modifiers() == Qt.ControlModifier:
+            if ev.angleDelta().y() > 0:
+                self.textEdit.zoomIn()
+            elif ev.angleDelta().y() < 0:
+                self.textEdit.zoomOut()
+            return True
+        return False
 
 
 class AncestorView(QWidget):
