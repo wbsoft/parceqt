@@ -176,6 +176,9 @@ class DebugWindow(QMainWindow):
         root_lexicon = parce.find(filename=filename, contents=text)
         self.set_text(text)
         self.set_root_lexicon(root_lexicon)
+        c = self.textEdit.textCursor()
+        c.setPosition(0)
+        self.textEdit.setTextCursor(c)
 
     def set_theme(self, theme="default", adjust_widget=True):
         """Set the theme to use for the text edit."""
