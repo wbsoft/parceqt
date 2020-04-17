@@ -183,8 +183,8 @@ def text_format(tf):
     Creates a QTextCharFormat for the specified TextFormat object.
 
     """
+    f = QTextCharFormat()
     if tf:
-        f = QTextCharFormat()
         if tf.color:
             f.setForeground(_color(tf.color))
         if tf.background_color:
@@ -225,6 +225,5 @@ def text_format(tf):
             f.setFontCapitalization(QFont.SmallCaps)
         if tf.font_weight:
             f.setFontWeight(_font_weight(tf.font_weight))
-        if not f.isEmpty():
-            return f
+    return f
 
