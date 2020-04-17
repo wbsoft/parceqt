@@ -38,7 +38,8 @@ import weakref
 
 from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QTimer
 from PyQt5.QtGui import (
-    QColor, QKeySequence, QTextCharFormat, QTextCursor, QTextDocument,
+    QColor, QKeySequence, QPalette, QTextCharFormat, QTextCursor,
+    QTextDocument,
 )
 from PyQt5.QtWidgets import (
     QAction, QActionGroup, QApplication, QComboBox, QFileDialog, QHBoxLayout,
@@ -96,6 +97,8 @@ class DebugWindow(QMainWindow):
 
         f = self._updated_format = QTextCharFormat()
         f.setBackground(QColor("palegreen"))
+        f = self._currentline_format = QTextCharFormat()
+        f.setProperty(QTextCharFormat.FullWidthSelection, True)
 
         self._actions = Actions(self)
         self._actions.add_menus(self.menuBar())
@@ -117,7 +120,7 @@ class DebugWindow(QMainWindow):
         splitter = QSplitter(self, orientation=Qt.Horizontal)
         layout.addWidget(splitter, 100)
 
-        self.textEdit = QPlainTextEdit(lineWrapMode=QPlainTextEdit.NoWrap)
+        self.textEdit = QPlainTextEdit(lineWrapMode=QPlainTextEdit.NoWrap, cursorWidth=2)
         self.treeView = QTreeView()
 
         splitter.addWidget(self.textEdit)
@@ -136,6 +139,7 @@ class DebugWindow(QMainWindow):
 
         # signal connections
         self.textEdit.viewport().installEventFilter(self)
+        self.textEdit.installEventFilter(self)
         self.lexiconChooser.lexicon_changed.connect(self.slot_root_lexicon_changed)
         self.ancestorView.node_clicked.connect(self.slot_node_clicked)
         b.started.connect(self.slot_build_started)
@@ -195,6 +199,7 @@ class DebugWindow(QMainWindow):
             else:
                 self.textEdit.setFont(QApplication.font(self))
                 self.textEdit.setPalette(QApplication.palette(self))
+            self.highlight_current_line()
         h = parceqt.highlighter.SyntaxHighlighter.instance(self.builder)
         h.set_theme(theme)
 
@@ -229,6 +234,7 @@ class DebugWindow(QMainWindow):
                 self.treeView.setCurrentIndex(index)
         elif tree is not None:
             self.ancestorView.clear()
+        self.highlight_current_line()
 
     def slot_item_clicked(self, index):
         """Called when a node in the tree view is clicked."""
@@ -262,6 +268,16 @@ class DebugWindow(QMainWindow):
         """Called when the root lexicon is changed."""
         self.builder.set_root_lexicon(lexicon)
 
+    def highlight_current_line(self):
+        """Highlight the current line."""
+        group = QPalette.Active if self.textEdit.hasFocus() else QPalette.Inactive
+        print("group", group)
+        color = self.textEdit.palette().color(group, QPalette.AlternateBase)
+        self._currentline_format.setBackground(color)
+        c = self.textEdit.textCursor()
+        c.clearSelection()
+        self.extraSelectionManager.highlight(self._currentline_format, [c])
+
     def show_updated_region(self):
         """Highlight the updated region for 2 seconds."""
         end = self.builder.end
@@ -275,16 +291,20 @@ class DebugWindow(QMainWindow):
         self.extraSelectionManager.highlight(self._updated_format, [c], msec=2000)
 
     def clear_updated_region(self):
-        self.textEdit.setExtraSelections([])
+        self.extraSelectionManager.clear(self._updated_format)
 
     def eventFilter(self, obj, ev):
-        """Implemented to support Ctrl+wheel zooming."""
-        if ev.type() == QEvent.Wheel and ev.modifiers() == Qt.ControlModifier:
-            if ev.angleDelta().y() > 0:
-                self.textEdit.zoomIn()
-            elif ev.angleDelta().y() < 0:
-                self.textEdit.zoomOut()
-            return True
+        """Implemented to support Ctrl+wheel zooming and keybfocus handling."""
+        if obj == self.textEdit:
+            if ev.type() in (QEvent.FocusIn, QEvent.FocusOut):
+                self.highlight_current_line()
+        else:   # viewport
+            if ev.type() == QEvent.Wheel and ev.modifiers() == Qt.ControlModifier:
+                if ev.angleDelta().y() > 0:
+                    self.textEdit.zoomIn()
+                elif ev.angleDelta().y() < 0:
+                    self.textEdit.zoomOut()
+                return True
         return False
 
 
@@ -594,10 +614,13 @@ class TreeBuilder(parceqt.treebuilder.TreeBuilder):
 
 def root_lexicons():
     """Get the root lexicons of all languages bundled with parce."""
+    lexicons = []
     for lang in parce.language.get_all_languages():
         root = getattr(lang, "root", None)
         if root:
-            yield root
+            lexicons.append(root)
+    lexicons.sort(key=repr)
+    return lexicons
 
 
 def lexicon_names(lexicons):
