@@ -271,11 +271,15 @@ class DebugWindow(QMainWindow):
     def highlight_current_line(self):
         """Highlight the current line."""
         group = QPalette.Active if self.textEdit.hasFocus() else QPalette.Inactive
-        color = self.textEdit.palette().color(group, QPalette.AlternateBase)
+        p = self.textEdit.palette()
+        color = p.color(group, QPalette.AlternateBase)
         self._currentline_format.setBackground(color)
-        c = self.textEdit.textCursor()
-        c.clearSelection()
-        self.extraSelectionManager.highlight(self._currentline_format, [c])
+        if color != p.color(group, QPalette.Base):
+            c = self.textEdit.textCursor()
+            c.clearSelection()
+            self.extraSelectionManager.highlight(self._currentline_format, [c])
+        else:
+            self.extraSelectionManager.clear(self._currentline_format)
 
     def show_updated_region(self):
         """Highlight the updated region for 2 seconds."""
