@@ -96,7 +96,9 @@ class DebugWindow(QMainWindow):
         super().__init__(parent)
 
         f = self._updated_format = QTextCharFormat()
-        f.setBackground(QColor("palegreen"))
+        c = QColor("palegreen")
+        c.setAlpha(64)
+        f.setBackground(c)
         f = self._currentline_format = QTextCharFormat()
         f.setProperty(QTextCharFormat.FullWidthSelection, True)
 
