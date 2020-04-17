@@ -271,7 +271,6 @@ class DebugWindow(QMainWindow):
     def highlight_current_line(self):
         """Highlight the current line."""
         group = QPalette.Active if self.textEdit.hasFocus() else QPalette.Inactive
-        print("group", group)
         color = self.textEdit.palette().color(group, QPalette.AlternateBase)
         self._currentline_format.setBackground(color)
         c = self.textEdit.textCursor()
