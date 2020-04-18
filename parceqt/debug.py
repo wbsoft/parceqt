@@ -38,7 +38,7 @@ import weakref
 
 from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QTimer
 from PyQt5.QtGui import (
-    QColor, QKeySequence, QPalette, QTextCharFormat, QTextCursor,
+    QColor, QFont, QKeySequence, QPalette, QTextCharFormat, QTextCursor,
     QTextDocument,
 )
 from PyQt5.QtWidgets import (
@@ -627,6 +627,7 @@ class TreeBuilder(parceqt.treebuilder.TreeBuilder):
 
 
 class DebugFormatter(parceqt.formatter.Formatter):
+    """A formatter that highlights the *unparsed* regions."""
     def __init__(self):
         # init with empty theme
         super().__init__(parce.theme.Theme())
@@ -635,13 +636,16 @@ class DebugFormatter(parceqt.formatter.Formatter):
         f.setForeground(color)
         color.setAlpha(48)
         f.setBackground(color)
+        f.setFontWeight(QFont.Bold)
 
     def font(self, widget=None):
+        """Always use a monospace font."""
         font = super().font(widget)
         font.setFamily("monospace")
         return font
 
     def format_ranges(self, tree, start=0, end=None):
+        """Reimplemented to return the unparsed ranges."""
         FormatRange = parce.formatter.FormatRange
         f = self._debug_format
         for t in tree.tokens_range(start, end):
