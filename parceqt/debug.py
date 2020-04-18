@@ -601,7 +601,7 @@ class TreeBuilder(parceqt.treebuilder.TreeBuilder):
 
     def replace_nodes(self, context, slice_, nodes):
         """Reimplemented for fine-grained signals."""
-        start, end = get_slice(context, slice_)
+        start, end, _step = slice_.indices(len(context))
         end -= 1
         if start < len(context) and start <= end:
             self.begin_remove_rows.emit(context, start, end)
@@ -615,7 +615,7 @@ class TreeBuilder(parceqt.treebuilder.TreeBuilder):
     def replace_pos(self, context, slice_, offset):
         """Reimplemented for fine-grained signals."""
         super().replace_pos(context, slice_, offset)
-        start, end = get_slice(context, slice_)
+        start, end, _step = slice_.indices(len(context))
         end -= 1
         if start < len(context) and start <= end:
             self.change_position.emit(context, start, end)
@@ -681,29 +681,6 @@ def lexicon_names(lexicons):
         else:
             yield fullname
             curlang = lang
-
-
-def get_slice(context, slice_):
-    """Return a tuple(start, end) for the ``slice_`` of the ``context``.
-
-    None is interpreted corrrectly and incorrect values are corrected.
-    End is in fact 1 after the last, just as for Python slices.
-
-    """
-    total = len(context)
-    start = slice_.start
-    if start is None or start < -total:
-        start = 0
-    elif start < 0:
-        start += total
-    end = slice_.stop
-    if end is None or end > total:
-        end = total
-    elif end < -total:
-        end = 0
-    elif end < 0:
-        end += total
-    return start, end
 
 
 def read_file(filename):
