@@ -44,7 +44,7 @@ class Formatter(parce.formatter.Formatter):
 
         """
         font = QApplication.font(widget)
-        f = self.window()
+        f = self.baseformat()
         if f:
             font = f.font().resolve(font)
         return font
@@ -72,41 +72,41 @@ class Formatter(parce.formatter.Formatter):
         """
         # all color groups
         p = QApplication.palette(widget)
-        f = self.window()  # QTextCharFormat
+        f = self.baseformat("window")  # QTextCharFormat
         if f:
             p.setColor(QPalette.Text, f.foreground().color())
             p.setColor(QPalette.Base, f.background().color())
-        f = self.selection()
+        f = self.baseformat("selection")
         if f:
             p.setColor(QPalette.HighlightedText, f.foreground().color())
             p.setColor(QPalette.Highlight, f.background().color())
-        f = self.currentline()
+        f = self.baseformat("current-line")
         if f:
             p.setColor(QPalette.AlternateBase, f.background().color())
 
         # Active color group
-        f = self.window("focus")
+        f = self.baseformat("window", "focus")
         if f:
             p.setColor(QPalette.Active, QPalette.Text, f.foreground().color())
             p.setColor(QPalette.Active, QPalette.Base, f.background().color())
-        f = self.selection("focus")
+        f = self.baseformat("selection", "focus")
         if f:
             p.setColor(QPalette.Active, QPalette.HighlightedText, f.foreground().color())
             p.setColor(QPalette.Active, QPalette.Highlight, f.background().color())
-        f = self.currentline("focus")
+        f = self.baseformat("current-line", "focus")
         if f:
             p.setColor(QPalette.Active, QPalette.AlternateBase, f.background().color())
 
         # Disabled color group
-        f = self.window("disabled")
+        f = self.baseformat("window", "disabled")
         if f:
             p.setColor(QPalette.Disabled, QPalette.Text, f.foreground().color())
             p.setColor(QPalette.Disabled, QPalette.Base, f.background().color())
-        f = self.selection("disabled")
+        f = self.baseformat("selection", "disabled")
         if f:
             p.setColor(QPalette.Disabled, QPalette.HighlightedText, f.foreground().color())
             p.setColor(QPalette.Disabled, QPalette.Highlight, f.background().color())
-        f = self.currentline("disabled")
+        f = self.baseformat("current-line", "disabled")
         if f:
             p.setColor(QPalette.Disabled, QPalette.AlternateBase, f.background().color())
         return p
