@@ -192,15 +192,14 @@ class DebugWindow(QMainWindow):
              theme = parce.theme_by_name(theme)
         if adjust_widget:
             if theme:
-                f = parceqt.formatter.Formatter(theme)
-                font = f.font()
-                if font:
-                    font.setPointSize(self.textEdit.font().pointSizeF())
-                    self.textEdit.setFont(font)
-                self.textEdit.setPalette(f.palette())
+                formatter = parceqt.formatter.Formatter(theme)
+                font = formatter.font() or QApplication.font(self)
+                self.textEdit.setPalette(formatter.palette())
             else:
-                self.textEdit.setFont(QApplication.font(self))
+                font = QApplication.font(self)
                 self.textEdit.setPalette(QApplication.palette(self))
+            font.setPointSize(self.textEdit.font().pointSizeF()) # keep size
+            self.textEdit.setFont(font)
             self.highlight_current_line()
         h = parceqt.highlighter.SyntaxHighlighter.instance(self.builder)
         h.set_theme(theme)

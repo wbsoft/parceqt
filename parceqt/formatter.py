@@ -35,8 +35,10 @@ class Formatter(parce.formatter.Formatter):
         super().__init__(theme, factory or text_format)
 
     def font(self):
-        """Return the font of the default text format."""
-        return self.window().font()
+        """Return the font of the default text format, if set."""
+        f = self.window()
+        if f:
+            return self.window().font()
 
     def palette(self):
         """Return a QPalette with the following colors set:
@@ -183,8 +185,8 @@ def text_format(tf):
     Creates a QTextCharFormat for the specified TextFormat object.
 
     """
-    f = QTextCharFormat()
     if tf:
+        f = QTextCharFormat()
         if tf.color:
             f.setForeground(_color(tf.color))
         if tf.background_color:
@@ -225,5 +227,6 @@ def text_format(tf):
             f.setFontCapitalization(QFont.SmallCaps)
         if tf.font_weight:
             f.setFontWeight(_font_weight(tf.font_weight))
-    return f
+        if not f.isEmpty():
+            return f
 
