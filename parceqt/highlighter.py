@@ -162,7 +162,7 @@ class SyntaxHighlighter(util.SingleInstance):
 
         num = block.blockNumber() + 100
         formats = split_formats(block, start)[0]
-        for f in self._formatter.format_ranges(root.context_slices(start, end)):
+        for f in self._formatter.format_ranges(root, start, end):
             while f.pos >= pos + block.length():
                 block.layout().setFormats(formats)
                 block = block.next()
