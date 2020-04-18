@@ -193,8 +193,8 @@ class DebugWindow(QMainWindow):
         formatter = parceqt.formatter.Formatter(theme) if theme else None
         if adjust_widget:
             if formatter:
-                font = formatter.font() or QApplication.font(self)
-                self.textEdit.setPalette(formatter.palette())
+                font = formatter.font(self)
+                self.textEdit.setPalette(formatter.palette(self))
             else:
                 font = QApplication.font(self)
                 self.textEdit.setPalette(QApplication.palette(self))

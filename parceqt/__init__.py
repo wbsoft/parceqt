@@ -132,18 +132,12 @@ def adjust_widget(widget):
     """
     doc = widget.document()
     b = builder(doc)
-    formatter = None
+    source = QApplication
     h = SyntaxHighlighter.get_instance(b)
     if h:
-        formatter = h.formatter()
-    if formatter:
-        font = formatter.font()
-        if font:
-            widget.setFont(font)
-        widget.setPalette(formatter.palette())
-    else:
-        widget.setFont(QApplication.font(widget))
-        widget.setPalette(QApplication.palette(widget))
+        source = h.formatter()
+    widget.setFont(source.font(widget))
+    widget.setPalette(source.palette(widget))
 
 
 def cursor(cur):

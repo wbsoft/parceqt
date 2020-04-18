@@ -23,7 +23,8 @@ A Formatter that uses parce.theme.Theme with QTextCharFormat.
 """
 
 
-from PyQt5.QtGui import QColor, QFont, QGuiApplication, QPalette, QTextCharFormat
+from PyQt5.QtGui import QColor, QFont, QPalette, QTextCharFormat
+from PyQt5.QtWidgets import QApplication
 
 import parce.formatter
 
@@ -34,13 +35,21 @@ class Formatter(parce.formatter.Formatter):
         """Reimplemented to use the text_format factory by default."""
         super().__init__(theme, factory or text_format)
 
-    def font(self):
-        """Return the font of the default text format, if set."""
+    def font(self, widget=None):
+        """Return the font of the default text format.
+
+        This font can then be used for a text editing widget. If widget is
+        specified, resolves the application's default font for the widget with
+        the properties from the theme.
+
+        """
+        font = QApplication.font(widget)
         f = self.window()
         if f:
-            return self.window().font()
+            font = f.font().resolve(font)
+        return font
 
-    def palette(self):
+    def palette(self, widget=None):
         """Return a QPalette with the following colors set:
 
             ``QPalette.Text``
@@ -57,9 +66,12 @@ class Formatter(parce.formatter.Formatter):
         If the theme supports it, the Inactive and Disabled color groups are
         set to their own colors. Otherwise, they just use the same colors.
 
+        If widget is specified, resolves the application's default palette for
+        the widget with the properties from the theme.
+
         """
         # all color groups
-        p = QGuiApplication.palette()
+        p = QApplication.palette(widget)
         f = self.window()  # QTextCharFormat
         if f:
             p.setColor(QPalette.Text, f.foreground().color())
