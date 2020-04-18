@@ -47,9 +47,10 @@ from PyQt5.QtWidgets import (
     QStatusBar, QTextEdit, QTreeView, QVBoxLayout, QWidget,
 )
 
+import parce.formatter
 import parce.language
+import parce.theme
 import parce.themes
-from parce.formatter import FormatRange
 import parceqt
 import parceqt.highlighter
 import parceqt.treebuilder
@@ -627,8 +628,8 @@ class TreeBuilder(parceqt.treebuilder.TreeBuilder):
 
 class DebugFormatter(parceqt.formatter.Formatter):
     def __init__(self):
-        ## TEMP init with dummy theme
-        super().__init__(parce.theme_by_name())
+        # init with empty theme
+        super().__init__(parce.theme.Theme())
         f = self._debug_format = QTextCharFormat()
         color = QColor(Qt.red)
         f.setForeground(color)
@@ -641,6 +642,7 @@ class DebugFormatter(parceqt.formatter.Formatter):
         return font
 
     def format_ranges(self, tree, start=0, end=None):
+        FormatRange = parce.formatter.FormatRange
         f = self._debug_format
         for t in tree.tokens_range(start, end):
             if t.pos > start:
