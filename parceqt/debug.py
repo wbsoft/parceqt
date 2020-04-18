@@ -49,6 +49,7 @@ from PyQt5.QtWidgets import (
 
 import parce.language
 import parce.themes
+from parce.formatter import FormatRange
 import parceqt
 import parceqt.highlighter
 import parceqt.treebuilder
@@ -188,9 +189,12 @@ class DebugWindow(QMainWindow):
 
     def set_theme(self, theme="default", adjust_widget=True):
         """Set the theme to use for the text edit."""
-        if isinstance(theme, str):
-             theme = parce.theme_by_name(theme)
-        formatter = parceqt.formatter.Formatter(theme) if theme else None
+        if theme == "_debug":
+            formatter = DebugFormatter()
+        else:
+            if isinstance(theme, str):
+                 theme = parce.theme_by_name(theme)
+            formatter = parceqt.formatter.Formatter(theme) if theme else None
         if adjust_widget:
             if formatter:
                 font = formatter.font(self)
@@ -411,8 +415,12 @@ class Actions:
         self.view_theme.setMenu(m)
         g = self.view_theme_actiongroup = QActionGroup(None)
         a = QAction(g, checkable=True)
-        a.setText("None")
+        a.setText("&None")
         a.setObjectName("None")
+        m.addAction(a)
+        a = QAction(g, checkable=True)
+        a.setText("Debug &Unparsed Text")
+        a.setObjectName("debug")
         m.addAction(a)
         m.addSeparator()
         for name in parce.themes.get_all_themes():
@@ -485,7 +493,12 @@ class Actions:
 
     def slot_view_theme_selected(self, action):
         """Switch to the selected theme."""
-        theme = None if action.objectName() == "None" else action.text()
+        if action.objectName() == "None":
+            theme = None
+        elif action.objectName() == "debug":
+            theme = "_debug"
+        else:
+            theme = action.text()
         self.mainwindow.set_theme(theme)
 
     def tree_expand_all(self):
@@ -610,6 +623,31 @@ class TreeBuilder(parceqt.treebuilder.TreeBuilder):
         """Reimplemented for fine-grained signals."""
         super().replace_root_lexicon(lexicon)
         self.change_root_lexicon.emit()
+
+
+class DebugFormatter(parceqt.formatter.Formatter):
+    def __init__(self):
+        ## TEMP init with dummy theme
+        super().__init__(parce.theme_by_name())
+        f = self._debug_format = QTextCharFormat()
+        color = QColor(Qt.red)
+        f.setForeground(color)
+        color.setAlpha(48)
+        f.setBackground(color)
+
+    def font(self, widget=None):
+        font = super().font(widget)
+        font.setFamily("monospace")
+        return font
+
+    def format_ranges(self, tree, start=0, end=None):
+        f = self._debug_format
+        for t in tree.tokens_range(start, end):
+            if t.pos > start:
+                yield FormatRange(start, t.pos, f)
+            start = t.end
+        if end is not None and end > start:
+            yield FormatRange(start, end, f)
 
 
 def root_lexicons():
