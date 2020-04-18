@@ -104,11 +104,12 @@ def highlight(doc, theme="default"):
     else:
         if isinstance(theme, str):
             theme = parce.theme.Theme.byname(theme)
-        SyntaxHighlighter.instance(b).set_theme(theme)
+        formatter = Formatter(theme) if theme else None
+        SyntaxHighlighter.instance(b).set_formatter(formatter)
 
 
-def adjust_widget(w):
-    """Convenience function to set palette and font of a text editing widget.
+def adjust_widget(widget):
+    """Convenience function to set palette and font of a text editing ``widget``.
 
     Sets the widget's palette and font to the theme of its QTextDocument's
     highlighter.
@@ -118,8 +119,9 @@ def adjust_widget(w):
 
     Basically this is as simple as::
 
-        widget.setFont(theme.font())
-        widget.setPalette(theme.palette())
+        formatter = parceqt.formatter.Formatter(theme)
+        widget.setFont(formatter.font())
+        widget.setPalette(formatter.palette())
 
     but this function is useful when you just set the theme once to a document
     and want to have its editing widget adjusted.
@@ -128,20 +130,20 @@ def adjust_widget(w):
     widget back to the default palette and font.
 
     """
-    doc = w.document()
+    doc = widget.document()
     b = builder(doc)
+    formatter = None
     h = SyntaxHighlighter.get_instance(b)
     if h:
-        theme = h.theme()
-        if theme:
-            f = Formatter(theme)
-            font = f.font()
-            if font:
-                w.setFont(font)
-            w.setPalette(f.palette())
-        else:
-            w.setFont(QApplication.font(w))
-            w.setPalette(QApplication.palette(w))
+        formatter = h.formatter()
+    if formatter:
+        font = formatter.font()
+        if font:
+            widget.setFont(font)
+        widget.setPalette(formatter.palette())
+    else:
+        widget.setFont(QApplication.font(widget))
+        widget.setPalette(QApplication.palette(widget))
 
 
 def cursor(cur):

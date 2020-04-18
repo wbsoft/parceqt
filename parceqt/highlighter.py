@@ -40,10 +40,11 @@ class SyntaxHighlighter(util.SingleInstance):
 
         SyntaxHighlighter.instance(treebuilder)
 
-    Use the builder to set the root lexicon.
+    You need to set a :class:`~parceqt.formatter.Formatter` which supplies
+    the highlighting text formats.
 
-    By default, no theme is set; use ``set_theme()`` to set a theme, which is
-    needed to enable highlighting.
+    By default, no formatter is set; use ``set_formatter()`` to set a
+    Formatter, which is needed to enable highlighting.
 
     """
     def __init__(self, builder):
@@ -61,24 +62,29 @@ class SyntaxHighlighter(util.SingleInstance):
         self.clear()
         super().delete()
 
-    def set_theme(self, theme):
-        """Set the Theme to use. The Theme provides the text formats to highlight.
+    def set_formatter(self, formatter):
+        """Set the Formatter to use, or None for no formatter.
 
-        If you set the theme to None, highlighting is effectively disabled,
+        The Formatter provides the text formats to highlight.
+        If you set the Formatter to None, highlighting is effectively disabled,
         although the TreeBuilder still does the tokenizing.
 
         """
-        if theme is not self.theme():
-            self._formatter = formatter.Formatter(theme) if theme else None
-            self.rehighlight() if theme else self.clear()
+        if formatter is not self._formatter:
+            self._formatter = formatter
+            self.rehighlight()
 
-    def theme(self):
-        """Return the currently set Theme."""
-        if self._formatter:
-            return self._formatter.theme()
+    def formatter(self):
+        """Return the currently set Formatter."""
+        return self._formatter
 
     def clear(self):
-        """Clear the highlighting. Do this before deleting."""
+        """Clear the highlighting.
+
+        This method is called when the formatter is set to None, and when
+        SyntaxHighlighter is explicitedly :meth`delete`-d.
+
+        """
         doc = self.document()
         block = doc.firstBlock()
         while block.isValid():
@@ -87,8 +93,20 @@ class SyntaxHighlighter(util.SingleInstance):
         doc.markContentsDirty(0, doc.characterCount() - 1)
 
     def rehighlight(self):
-        """Draws the highlighting again. Normally not needed."""
-        self.slot_updated(0, self.document().characterCount() - 1)
+        """Draw or clear the highlighting, depending on the Formatter.
+
+        This method is automatically called when the Formatter
+        is changed. Clears the highlighting if the current formatter is None.
+
+        """
+        if self._formatter:
+            root = self.builder().get_root()
+            if root:
+                # no need to redraw if treebuilder is already busy
+                end = self.document().characterCount() - 1
+                self.draw_highlighting(root, 0, end, True)
+        else:
+            self.clear()
 
     def document(self):
         """Return the QTextDocument."""
@@ -96,27 +114,28 @@ class SyntaxHighlighter(util.SingleInstance):
 
     def slot_preview(self, start, tree):
         """Called when there is a peek preview."""
-        formatter = self._formatter
-        if formatter:
+        if self._formatter:
             doc = self.document()
             end = doc.findBlock(tree.end).position() - 1
             if start < end:
-                self.draw_highlighting(formatter, tree, start, end)
+                self.draw_highlighting(tree, start, end)
 
     def slot_updated(self, start, end):
         """Called on update; performs the highlighting."""
-        formatter = self._formatter
-        if formatter:
-            self.draw_highlighting(formatter, self.builder().root, start, end, True)
+        if self._formatter:
+            self.draw_highlighting(self.builder().root, start, end, True)
 
-    def draw_highlighting(self, formatter, root, start, end, interruptible=False):
-        """Draw the highlighting using formatter and tree from start to end.
+    def draw_highlighting(self, root, start, end, interruptible=False):
+        """Draw the highlighting using tree ``root`` from ``start`` to ``end``.
 
-        If interruptible is True, QApplication::process_events() is called
-        every 1000 lines, to enable the user typing in the document, which also
-        causes the highlighting to quit and resume later.
+        If ``interruptible`` is True, ``QApplication::process_events()`` is
+        called every 1000 lines, to enable the user typing in the document,
+        which also causes the highlighting to quit and resume later.
 
         """
+        if not self._formatter:
+            return
+
         doc = self.document()
 
         if interruptible:
@@ -143,7 +162,7 @@ class SyntaxHighlighter(util.SingleInstance):
 
         num = block.blockNumber() + 100
         formats = split_formats(block, start)[0]
-        for f in formatter.format_ranges(root.context_slices(start, end)):
+        for f in self._formatter.format_ranges(root.context_slices(start, end)):
             while f.pos >= pos + block.length():
                 block.layout().setFormats(formats)
                 block = block.next()

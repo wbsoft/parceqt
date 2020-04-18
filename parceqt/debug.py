@@ -190,9 +190,9 @@ class DebugWindow(QMainWindow):
         """Set the theme to use for the text edit."""
         if isinstance(theme, str):
              theme = parce.theme_by_name(theme)
+        formatter = parceqt.formatter.Formatter(theme) if theme else None
         if adjust_widget:
-            if theme:
-                formatter = parceqt.formatter.Formatter(theme)
+            if formatter:
                 font = formatter.font() or QApplication.font(self)
                 self.textEdit.setPalette(formatter.palette())
             else:
@@ -202,11 +202,7 @@ class DebugWindow(QMainWindow):
             self.textEdit.setFont(font)
             self.highlight_current_line()
         h = parceqt.highlighter.SyntaxHighlighter.instance(self.builder)
-        h.set_theme(theme)
-
-    def adjust_widget(self):
-        """Adjust the text edit's palette to the theme."""
-        parceqt.adjust_widget(self.textEdit)
+        h.set_formatter(formatter)
 
     def slot_build_started(self):
         """Called when the tree builder has started a build."""
