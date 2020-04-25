@@ -2,11 +2,12 @@ ChangeLog
 =========
 
 
-current:
+2020-04-25: parceqt-0.8.5
 
 - add "Debug Unparsed Text" theme, highlighting unparsed text
 - adjust treebuilder and highlighter to the new peek() call of parce.treebuilder
 - debug window:
+  - when opening a file, automatically guess the language to use
   - new commands to show/hide the tree and to reload the theme stylesheet
   - Ctrl-wheel zoom now changes the font size of the text editor window
   - add expand/collapse actions
