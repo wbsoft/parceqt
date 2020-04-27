@@ -28,10 +28,9 @@ See also the debug module.
 """
 
 
+import reprlib
+
 from PyQt5.QtCore import QAbstractItemModel, QModelIndex, Qt
-
-
-import parce.util
 
 
 class TreeModel(QAbstractItemModel):
@@ -205,7 +204,7 @@ class TreeModel(QAbstractItemModel):
         )
         if node.is_token:
             d.update(
-                text = parce.util.abbreviate_repr(node.text),
+                text = reprlib.repr(node.text),
                 action = node.action,
                 group = format(node.group.index(node)) if node.group else "",
             )
