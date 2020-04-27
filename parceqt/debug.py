@@ -95,7 +95,7 @@ class DebugWindow(QMainWindow):
     show_updated_region_enabled = False
 
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent, windowTitle="parceqt debugger")
 
         f = self._updated_format = QTextCharFormat()
         c = QColor("palegreen")
