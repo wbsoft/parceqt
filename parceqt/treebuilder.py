@@ -84,10 +84,12 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
     def process_started(self):
         """Reimplemented to emit the ``started`` signal."""
         self.started.emit()
+        super().process_started()
 
     def process_finished(self):
         """Reimplemented to emit the ``updated`` signal."""
         self.updated.emit(self.start, self.end)
+        super().process_finished()
 
     def wait(self):
         """Wait for completion if a background job is running."""
@@ -101,6 +103,7 @@ class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
     def peek(self, start, tree):
         """Reimplemented to get a sneak preview."""
         self.preview.emit(start, tree)
+        super().peek(start, tree)
 
     def root_lexicon(self):
         """Return the current root lexicon."""
