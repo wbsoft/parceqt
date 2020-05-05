@@ -62,6 +62,10 @@ class Document(
         parce.document.AbstractDocument.__init__(self)
         self._document = document
 
+    def builder(self):
+        """Reimplemented to return the builder that's active on our QTextDocument."""
+        return treebuilder.TreeBuilder.instance(self.document())
+
     def document(self):
         """Return our QTextDocument."""
         return self._document
@@ -102,16 +106,6 @@ class Document(
     def contents_changed(self, start, removed, added):
         """Reimplemented to do nothing, it is already handled by TreeBuilder."""
         pass
-
-    def root_lexicon(self):
-        """Return the currently (being) set root lexicon."""
-        builder = treebuilder.TreeBuilder.instance(self.document())
-        return builder.root_lexicon()
-
-    def set_root_lexicon(self, root_lexicon):
-        """Set the root lexicon to use to tokenize the text. Triggers a rebuild."""
-        builder = treebuilder.TreeBuilder.instance(self.document())
-        builder.set_root_lexicon(root_lexicon)
 
 
 class Cursor(parce.document.Cursor):
