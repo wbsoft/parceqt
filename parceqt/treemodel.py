@@ -206,7 +206,7 @@ class TreeModel(QAbstractItemModel):
             d.update(
                 text = reprlib.repr(node.text),
                 action = node.action,
-                group = format(node.group.index(node)) if node.group else "",
+                group = "" if node.group is None else format(node.group)
             )
         else:
             d.update(
