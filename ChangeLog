@@ -2,6 +2,11 @@ ChangeLog
 =========
 
 
+2020-05-18: parceqt-0.12.0
+
+- very small api adjustments to parce-0.12.0
+
+
 2020-05-13: parceqt-0.10.0
 
 - very small api adjustments to parce-0.10.0
