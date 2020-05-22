@@ -612,12 +612,11 @@ class TreeBuilder(parceqt.treebuilder.TreeBuilder):
             context[start:start] = nodes
             self.end_insert_rows.emit()
 
-    def replace_pos(self, context, slice_, offset):
+    def replace_pos(self, context, index, offset):
         """Reimplemented for fine-grained signals."""
-        super().replace_pos(context, slice_, offset)
-        start, end, _step = slice_.indices(len(context))
-        end -= 1
-        if start < len(context) and start <= end:
+        super().replace_pos(context, index, offset)
+        start, end = index, len(context) - 1
+        if start <= end:
             self.change_position.emit(context, start, end)
 
     def replace_root_lexicon(self, lexicon):
