@@ -203,7 +203,7 @@ class DebugWindow(QMainWindow):
             else:
                 font = QApplication.font(self)
                 self.textEdit.setPalette(QApplication.palette(self))
-            font.setPointSize(self.textEdit.font().pointSizeF()) # keep size
+            font.setPointSizeF(self.textEdit.font().pointSizeF()) # keep size
             self.textEdit.setFont(font)
             self.highlight_current_line()
         h = parceqt.highlighter.SyntaxHighlighter.instance(self.builder)
