@@ -228,7 +228,8 @@ def text_format(tf):
             try:
                 f.setFontFamilies(tf.font_family)
             except AttributeError: # this property was introduced in Qt 5.13
-                f.setFontFamily(tf.font_family[0])
+                pass
+            f.setFontFamily(tf.font_family[0])
         if tf.font_size:
             f.setFontPointSize(_font_point_size(tf.font_size, tf.font_size_unit))
         if tf.font_stretch:
