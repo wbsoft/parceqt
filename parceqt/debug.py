@@ -194,7 +194,7 @@ class DebugWindow(QMainWindow):
             formatter = DebugFormatter()
         else:
             if isinstance(theme, str):
-                 theme = parce.theme_by_name(theme)
+                theme = parce.theme_by_name(theme)
             formatter = parceqt.formatter.Formatter(theme) if theme else None
         if adjust_widget:
             if formatter:
