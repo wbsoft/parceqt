@@ -107,6 +107,20 @@ class Document(
         """Reimplemented to do nothing, it is already handled by TreeBuilder."""
         pass
 
+    def find_start_of_line(self, position):
+        """Reimplemented to use QTextDocument's TextBlock."""
+        block = self.document().findBlock(position)
+        if not block.isValid():
+            block = self.document().lastBlock()
+        return block.position()
+
+    def find_end_of_line(self, position):
+        """Reimplemented to use QTextDocument's TextBlock."""
+        block = self.document().findBlock(position)
+        if not block.isValid():
+            block = self.document().lastBlock()
+        return block.position() + block.length() - 1
+
 
 class Cursor(parce.document.Cursor):
     """A cursor with a textCursor() method to return a QTextCursor.
