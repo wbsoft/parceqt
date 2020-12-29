@@ -107,14 +107,14 @@ class Document(
         """Reimplemented to do nothing, it is already handled by TreeBuilder."""
         pass
 
-    def find_start_of_line(self, position):
+    def find_start_of_block(self, position):
         """Reimplemented to use QTextDocument's TextBlock."""
         block = self.document().findBlock(position)
         if not block.isValid():
             block = self.document().lastBlock()
         return block.position()
 
-    def find_end_of_line(self, position):
+    def find_end_of_block(self, position):
         """Reimplemented to use QTextDocument's TextBlock."""
         block = self.document().findBlock(position)
         if not block.isValid():
