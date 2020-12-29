@@ -2,6 +2,11 @@ ChangeLog
 =========
 
 
+current:  parceqt-0.14.0
+
+- added Document.find_start/end_of_line() reimplementation using QTextBlock
+
+
 2020-06-02: parceqt-0.13.0
 
 - small api adjustments to parce-0.13.0
