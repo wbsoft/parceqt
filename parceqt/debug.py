@@ -228,12 +228,14 @@ class DebugWindow(QMainWindow):
         tree = self.builder.get_root()
         if tree:
             pos = self.textEdit.textCursor().position()
-            token = tree.find_token(pos) or tree.find_token_left(pos)
-            self.ancestorView.set_token_path(token)
-            model = self.treeView.model()
-            if model:
-                index = model.get_model_index(token)
-                self.treeView.setCurrentIndex(index)
+            doc = parceqt.document.Document(self.document, self.builder)
+            token = doc.token(pos)
+            if token:
+                self.ancestorView.set_token_path(token)
+                model = self.treeView.model()
+                if model:
+                    index = model.get_model_index(token)
+                    self.treeView.setCurrentIndex(index)
         elif tree is not None:
             self.ancestorView.clear()
         self.highlight_current_line()
