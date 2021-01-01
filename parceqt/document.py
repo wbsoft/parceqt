@@ -57,14 +57,13 @@ class Document(
     the background.
 
     """
-    def __init__(self, document):
+    def __init__(self, document, builder=None):
         """Initialize with QTextDocument."""
         parce.document.AbstractDocument.__init__(self)
+        if not builder:
+            builder = treebuilder.TreeBuilder.instance(document)
+        parce.treedocument.TreeDocumentMixin.__init__(self, builder)
         self._document = document
-
-    def builder(self):
-        """Reimplemented to return the builder that's active on our QTextDocument."""
-        return treebuilder.TreeBuilder.instance(self.document())
 
     def document(self):
         """Return our QTextDocument."""
