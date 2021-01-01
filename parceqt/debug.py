@@ -228,7 +228,7 @@ class DebugWindow(QMainWindow):
         tree = self.builder.get_root()
         if tree:
             pos = self.textEdit.textCursor().position()
-            token = tree.find_token(pos)
+            token = tree.find_token(pos) or tree.find_token_left(pos)
             self.ancestorView.set_token_path(token)
             model = self.treeView.model()
             if model:
