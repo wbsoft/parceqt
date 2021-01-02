@@ -80,7 +80,6 @@ class Document(
 
     def _update_contents(self):
         """Apply the changes to our QTextDocument."""
-        doc = self.document()
         c = QTextCursor(self.document())
         c.beginEditBlock()
         for start, end, text in reversed(self._changes):
@@ -96,7 +95,6 @@ class Document(
         This is faster than getting the whole text and using Python to slice it.
 
         """
-        doc = self.document()
         c = QTextCursor(self.document())
         c.setPosition(end)
         c.setPosition(start, QTextCursor.KeepAnchor)
