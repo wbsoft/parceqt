@@ -37,7 +37,7 @@ import parce.treebuilder
 from . import util
 
 
-class TreeBuilder(util.SingleInstance, QObject, parce.treebuilder.TreeBuilder):
+class TreeBuilder(util.SingleInstance, parce.treebuilder.TreeBuilder, QObject):
     """A TreeBuilder that uses Qt signals instead of callbacks.
 
     This TreeBuilder is attachted to a QTextDocument, and automatically
