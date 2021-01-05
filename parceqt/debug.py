@@ -51,11 +51,11 @@ import parce.formatter
 import parce.language
 import parce.theme
 import parce.themes
+import parce.util
 import parceqt
 import parceqt.highlighter
 import parceqt.treebuilder
 import parceqt.treemodel
-import parceqt.util
 
 
 class DebugWindow(QMainWindow):
@@ -321,7 +321,7 @@ class AncestorView(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._clicking = parceqt.util.Switch()
+        self._clicking = parce.util.Switch()
         self.setLayout(QHBoxLayout(margin=0, spacing=0))
         self.clear()
 
