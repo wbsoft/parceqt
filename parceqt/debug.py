@@ -319,9 +319,10 @@ class AncestorView(QWidget):
     """Displays a horizontal row of buttons for a token."""
     node_clicked = pyqtSignal(object)
 
+    _clicking = parce.util.Switch()
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._clicking = parce.util.Switch()
         self.setLayout(QHBoxLayout(margin=0, spacing=0))
         self.clear()
 
