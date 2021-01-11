@@ -15,6 +15,15 @@ This manual documents version |release|.
    treemodel.rst
    debug.rst
 
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+   :caption: Extra links:
+
+   parceqt@Github <https://github.com/wbsoft/parceqt>
+   parceqt@PyPi <https://pypi.org/project/parceqt>
+   Main parce docs <https://parce.info/>
+
 
 Indices and tables
 ==================

@@ -107,23 +107,15 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 #html_theme = 'alabaster'
-html_theme = 'alabaster'
+html_theme = 'furo'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
 html_theme_options = {
-    'fixed_sidebar': 'true',
-    'github_user': 'wbsoft',
-    'github_repo': 'parceqt',
-#    'show_related': 'true',
-    'show_relbar_bottom': 'true',
-    'description': parceqt.pkginfo.description,
-    'extra_nav_links': {
-        'parceqt@Github': 'https://github.com/wbsoft/parceqt',
-        'parceqt@PyPi': 'https://pypi.org/project/parceqt',
-        'Main parce docs': 'https://parce.info/',
+    "light_css_variables": {
+        "font-stack": "Lato, sans-serif",
     },
 }
 
@@ -132,6 +124,10 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_css_files = [
+    'custom.css',
+]
+
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
@@ -139,11 +135,13 @@ html_static_path = ['_static']
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
 html_sidebars = {
     '**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',  # needs 'show_related': True theme option to display
-        'searchbox.html',
-    ]
+        "sidebar/scroll-start.html",
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/navigation.html",
+        "sidebar/ethical-ads.html",
+        "sidebar/scroll-end.html",
+    ]   ,
 }
 
 
