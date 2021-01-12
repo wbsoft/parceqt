@@ -2,7 +2,14 @@ ChangeLog
 =========
 
 
-2021-01-02:  parceqt-0.14.0
+2021-01-12: parceqt-0.15.0
+
+- small api adjustments to parce-0.15.0
+- some cleanups
+- documentation switched to Furo theme, looks better on small devices
+
+
+2021-01-02: parceqt-0.14.0
 
 - added Document.find_start/end_of_line() reimplementation using QTextBlock
 - small api adjustments to parce-0.14.0
