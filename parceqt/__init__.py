@@ -149,7 +149,7 @@ def cursor(cur):
 
     """
     c = Cursor(Document(cur.document()))
-    c.start = cur.selectionStart()
+    c.pos = cur.selectionStart()
     c.end = cur.selectionEnd()
     return c
 
