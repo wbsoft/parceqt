@@ -1,6 +1,7 @@
 .. include:: ../../README.rst
 
 This manual documents version |release|.
+Last update: |today|.
 
 .. toctree::
    :maxdepth: 2
