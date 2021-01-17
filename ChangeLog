@@ -2,6 +2,12 @@ ChangeLog
 =========
 
 
+2021-01-17: parceqt-0.16.0
+
+- added Edit → Copy selection as HTML
+- parceqt.cursor(): fixed new attrname cursor.start → cursor.pos
+
+
 2021-01-12: parceqt-0.15.0
 
 - small api adjustments to parce-0.15.0
