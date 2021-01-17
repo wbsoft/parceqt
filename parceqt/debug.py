@@ -495,8 +495,8 @@ class Actions:
     def copy_html(self):
         """Copy selected text as HTML."""
         from parce.out.html import HtmlFormatter
-        # TEMP parceqt.cursor instantiates Document which does not find our
-        # debugging TreeBuilder automatically, needs to be fixed.
+        # We can't use parceqt.cursor() because that instantiates a Document
+        # which does not find our debugging TreeBuilder automatically.
         d = parceqt.Document(self.mainwindow.document, self.mainwindow.builder)
         c = self.mainwindow.textEdit.textCursor()
         c = parceqt.Cursor(d, c.selectionStart(), c.selectionEnd())
