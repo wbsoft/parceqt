@@ -36,7 +36,7 @@ The debug window shows highlighted text, and the tokenized tree structure.
 import operator
 import weakref
 
-from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QTimer
+from PyQt5.QtCore import pyqtSignal, QEvent, QMimeData, QObject, Qt, QTimer
 from PyQt5.QtGui import (
     QColor, QFont, QKeySequence, QPalette, QTextCharFormat, QTextCursor,
     QTextDocument,
@@ -409,6 +409,7 @@ class Actions:
 
     def create_actions(self):
         self.file_open = QAction()
+        self.edit_copy_html = QAction()
         self.view_tree = QAction(checkable=True)
         self.view_tree_expand = QAction()
         self.view_tree_collapse = QAction()
@@ -436,6 +437,7 @@ class Actions:
 
     def set_action_texts(self):
         self.file_open.setText("&Open File...")
+        self.edit_copy_html.setText("&Copy selection as HTML")
         self.view_tree.setText("Show &Tree Structure")
         self.view_tree_expand.setText("&Expand All")
         self.view_tree_collapse.setText("&Collapse All")
@@ -457,9 +459,11 @@ class Actions:
                 break
 
     def add_menus(self, menubar):
-        """Create and return a menu bar."""
+        """Populate a menu bar."""
         filemenu = QMenu("&File", menubar)
         filemenu.addAction(self.file_open)
+        editmenu = QMenu("&Edit", menubar)
+        editmenu.addAction(self.edit_copy_html)
         viewmenu = QMenu("&View", menubar)
         viewmenu.addAction(self.view_theme)
         viewmenu.addSeparator()
@@ -469,10 +473,12 @@ class Actions:
         viewmenu.addSeparator()
         viewmenu.addAction(self.view_updated_region)
         menubar.addMenu(filemenu)
+        menubar.addMenu(editmenu)
         menubar.addMenu(viewmenu)
 
     def connect_actions(self):
         self.file_open.triggered.connect(self.open_file)
+        self.edit_copy_html.triggered.connect(self.copy_html)
         self.view_tree.triggered.connect(self.toggle_tree_visibility)
         self.view_tree_expand.triggered.connect(self.tree_expand_all)
         self.view_tree_collapse.triggered.connect(self.tree_collapse_all)
@@ -485,6 +491,20 @@ class Actions:
         filename, filetype = QFileDialog.getOpenFileName(self.mainwindow, "Open File")
         if filename:
             self.mainwindow.open_file(filename)
+
+    def copy_html(self):
+        """Copy selected text as HTML."""
+        from parce.out.html import HtmlFormatter
+        # TEMP parceqt.cursor instantiates Document which does not find our
+        # debugging TreeBuilder automatically, needs to be fixed.
+        d = parceqt.Document(self.mainwindow.document, self.mainwindow.builder)
+        c = self.mainwindow.textEdit.textCursor()
+        c = parceqt.Cursor(d, c.selectionStart(), c.selectionEnd())
+        theme = parceqt.highlighter.SyntaxHighlighter.instance(self.mainwindow.builder).formatter().get_theme()
+        html = HtmlFormatter(theme).full_html(c)
+        data = QMimeData()
+        data.setHtml(html)
+        QApplication.clipboard().setMimeData(data)
 
     def toggle_tree_visibility(self, checked):
         """Handle Show Tree Structure checkbox toggle."""
