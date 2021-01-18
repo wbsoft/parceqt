@@ -190,12 +190,9 @@ class DebugWindow(QMainWindow):
 
     def set_theme(self, theme="default", adjust_widget=True):
         """Set the theme to use for the text edit."""
-        if theme == "_debug":
-            formatter = DebugFormatter()
-        else:
-            if isinstance(theme, str):
-                theme = parce.theme_by_name(theme)
-            formatter = parceqt.formatter.Formatter(theme) if theme else None
+        if isinstance(theme, str):
+            theme = parce.theme_by_name(theme)
+        formatter = parceqt.formatter.Formatter(theme) if theme else None
         if adjust_widget:
             if formatter:
                 font = formatter.font(self)
@@ -423,10 +420,6 @@ class Actions:
         a.setText("&None")
         a.setObjectName("None")
         m.addAction(a)
-        a = QAction(g, checkable=True)
-        a.setText("Debug &Unparsed Text")
-        a.setObjectName("debug")
-        m.addAction(a)
         m.addSeparator()
         for name in parce.themes.get_all_themes():
             a = QAction(g, checkable=True)
@@ -519,8 +512,6 @@ class Actions:
         """Switch to the selected theme."""
         if action.objectName() == "None":
             theme = None
-        elif action.objectName() == "debug":
-            theme = "_debug"
         else:
             theme = action.text()
         self.mainwindow.set_theme(theme)
@@ -646,36 +637,6 @@ class TreeBuilder(parceqt.treebuilder.TreeBuilder):
         """Reimplemented for fine-grained signals."""
         super().replace_root_lexicon(lexicon)
         self.change_root_lexicon.emit()
-
-
-class DebugFormatter(parceqt.formatter.Formatter):
-    """A formatter that highlights the *unparsed* regions."""
-    def __init__(self):
-        # init with empty theme
-        super().__init__(parce.theme.Theme())
-        f = self._debug_format = QTextCharFormat()
-        color = QColor(Qt.red)
-        f.setForeground(color)
-        color.setAlpha(48)
-        f.setBackground(color)
-        f.setFontWeight(QFont.Bold)
-
-    def font(self, widget=None):
-        """Always use a monospace font."""
-        font = super().font(widget)
-        font.setFamily("monospace")
-        return font
-
-    def format_ranges(self, tree, start=0, end=None):
-        """Reimplemented to return the unparsed ranges."""
-        FormatRange = parce.formatter.FormatRange
-        f = self._debug_format
-        for t in tree.tokens_range(start, end):
-            if t.pos > start:
-                yield FormatRange(start, t.pos, f)
-            start = t.end
-        if end is not None and end > start:
-            yield FormatRange(start, end, f)
 
 
 def root_lexicons():
