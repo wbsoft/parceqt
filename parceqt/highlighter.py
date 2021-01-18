@@ -101,7 +101,7 @@ class SyntaxHighlighter(util.SingleInstance):
         """
         if self._formatter:
             root = self.builder().get_root()
-            if root:
+            if root is not None:
                 # no need to redraw if treebuilder is already busy
                 end = self.document().characterCount() - 1
                 self.draw_highlighting(root, 0, end, True)
