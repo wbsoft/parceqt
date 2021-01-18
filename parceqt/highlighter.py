@@ -82,7 +82,7 @@ class SyntaxHighlighter(util.SingleInstance):
         """Clear the highlighting.
 
         This method is called when the formatter is set to None, and when
-        SyntaxHighlighter is explicitedly :meth`delete`-d.
+        SyntaxHighlighter is explicitedly :meth:`delete`-d.
 
         """
         doc = self.document()
