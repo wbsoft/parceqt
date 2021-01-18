@@ -43,12 +43,38 @@ class TreeBuilder(util.SingleInstance, parce.treebuilder.TreeBuilder, QObject):
     This TreeBuilder is attachted to a QTextDocument, and automatically
     updates the tokens when the document changes.
 
-    """
-    started = pyqtSignal()          #: emitted when a new update job started
-    updated = pyqtSignal(int, int)  #: emitted when one full run finished
-    preview = pyqtSignal(int, object) #: emitted with premature tree when peek_threshold is reached
+    The signals ``begin_*``, ``end_*``, ``change_*`` signals can be used to
+    connect a QAbstractItemModel to a tree builder, they are not needed for
+    normal operation.
 
-    peek_threshold = 1000
+    """
+    started = pyqtSignal()              #: emitted when a new update job started
+    updated = pyqtSignal(int, int)      #: emitted when one full run finished
+    preview = pyqtSignal(int, object)   #: emitted with premature tree when peek_threshold is reached
+
+    #: emitted before removing a slice of nodes (Context, first, last)
+    begin_remove_rows = pyqtSignal(object, int, int)
+
+    #: emitted after removing nodes
+    end_remove_rows = pyqtSignal()
+
+    #: emitted before inserting nodes (Context, first, last)
+    begin_insert_rows = pyqtSignal(object, int, int)
+
+    #: emitted after inserting nodes
+    end_insert_rows = pyqtSignal()
+
+    #: emitted when a slice of Tokens changes position (Context, first, last)
+    change_position = pyqtSignal(object, int, int)
+
+    #: emitted when the root lexicon has changed
+    change_root_lexicon = pyqtSignal()
+
+    #: after how many characters a build preview is presented
+    peek_threshold = 2000
+
+    #: set to True to print some debugging info to the console.
+    debugging = False
 
     def __init__(self, document, root_lexicon=None):
         QObject.__init__(self, document)
@@ -61,6 +87,13 @@ class TreeBuilder(util.SingleInstance, parce.treebuilder.TreeBuilder, QObject):
     def document(self):
         """Return the QTextDocument, which is our parent."""
         return self.parent()
+
+    def process(self):
+        """Reimplemented to print some debugging info if desired."""
+        for stage in super().process():
+            if self.debugging:
+                print("Processing stage:", stage)
+            yield stage
 
     def start_processing(self):
         """Reimplemented to start a background job."""
@@ -117,4 +150,28 @@ class TreeBuilder(util.SingleInstance, parce.treebuilder.TreeBuilder, QObject):
         """Called after modification of the text, retokenizes the modified part."""
         self.rebuild(self.document().toPlainText(), False, start, removed, added)
 
+    def replace_nodes(self, context, slice_, nodes):
+        """Reimplemented for fine-grained signals."""
+        start, end, _step = slice_.indices(len(context))
+        end -= 1
+        if start < len(context) and start <= end:
+            self.begin_remove_rows.emit(context, start, end)
+            del context[slice_]
+            self.end_remove_rows.emit()
+        if nodes:
+            self.begin_insert_rows.emit(context, start, start + len(nodes) - 1)
+            context[start:start] = nodes
+            self.end_insert_rows.emit()
+
+    def replace_pos(self, context, index, offset):
+        """Reimplemented for fine-grained signals."""
+        super().replace_pos(context, index, offset)
+        start, end = index, len(context) - 1
+        if start <= end:
+            self.change_position.emit(context, start, end)
+
+    def replace_root_lexicon(self, lexicon):
+        """Reimplemented for fine-grained signals."""
+        super().replace_root_lexicon(lexicon)
+        self.change_root_lexicon.emit()
 

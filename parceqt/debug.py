@@ -137,7 +137,9 @@ class DebugWindow(QMainWindow):
         self.document = d = self.textEdit.document()
         self.textEdit.setDocument(self.document)
 
-        self.builder = b = TreeBuilder.instance(d)
+        self.builder = b = parceqt.TreeBuilder.instance(d)
+        b.debugging = True
+
         self.setStatusBar(QStatusBar())
         self.create_model()
 
@@ -488,11 +490,7 @@ class Actions:
     def copy_html(self):
         """Copy selected text as HTML."""
         from parce.out.html import HtmlFormatter
-        # We can't use parceqt.cursor() because that instantiates a Document
-        # which does not find our debugging TreeBuilder automatically.
-        d = parceqt.Document(self.mainwindow.document, self.mainwindow.builder)
-        c = self.mainwindow.textEdit.textCursor()
-        c = parceqt.Cursor(d, c.selectionStart(), c.selectionEnd())
+        c = parceqt.cursor(self.mainwindow.textEdit.textCursor())
         theme = parceqt.highlighter.SyntaxHighlighter.instance(self.mainwindow.builder).formatter().get_theme()
         html = HtmlFormatter(theme).full_html(c)
         data = QMimeData()
@@ -593,50 +591,6 @@ class ExtraSelectionManager(QObject):
             selections = sorted(self._selections.values(), key=operator.itemgetter(0))
             ess = sum(map(operator.itemgetter(1), selections), [])
             textedit.setExtraSelections(ess)
-
-
-class TreeBuilder(parceqt.treebuilder.TreeBuilder):
-    """Inherited from to add some debugging capabilities."""
-    begin_remove_rows = pyqtSignal(object, int, int)
-    end_remove_rows = pyqtSignal()
-    begin_insert_rows = pyqtSignal(object, int, int)
-    end_insert_rows = pyqtSignal()
-    change_position = pyqtSignal(object, int, int)
-    change_root_lexicon = pyqtSignal()
-
-    def process(self):
-        for stage in super().process():
-            print("Processing stage:", stage)
-            yield stage
-
-    def process_finished(self):
-        """Reimplemented to emit the ``updated`` signal."""
-        super().process_finished()
-
-    def replace_nodes(self, context, slice_, nodes):
-        """Reimplemented for fine-grained signals."""
-        start, end, _step = slice_.indices(len(context))
-        end -= 1
-        if start < len(context) and start <= end:
-            self.begin_remove_rows.emit(context, start, end)
-            del context[slice_]
-            self.end_remove_rows.emit()
-        if nodes:
-            self.begin_insert_rows.emit(context, start, start + len(nodes) - 1)
-            context[start:start] = nodes
-            self.end_insert_rows.emit()
-
-    def replace_pos(self, context, index, offset):
-        """Reimplemented for fine-grained signals."""
-        super().replace_pos(context, index, offset)
-        start, end = index, len(context) - 1
-        if start <= end:
-            self.change_position.emit(context, start, end)
-
-    def replace_root_lexicon(self, lexicon):
-        """Reimplemented for fine-grained signals."""
-        super().replace_root_lexicon(lexicon)
-        self.change_root_lexicon.emit()
 
 
 def root_lexicons():
