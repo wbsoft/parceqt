@@ -74,41 +74,53 @@ class Formatter(parce.formatter.Formatter):
         p = QApplication.palette(widget)
         f = self.baseformat("window")  # QTextCharFormat
         if f:
-            p.setColor(QPalette.Text, f.foreground().color())
-            p.setColor(QPalette.Base, f.background().color())
+            if f.hasProperty(QTextCharFormat.ForegroundBrush):
+                p.setColor(QPalette.Text, f.foreground().color())
+            if f.hasProperty(QTextCharFormat.BackgroundBrush):
+                p.setColor(QPalette.Base, f.background().color())
         f = self.baseformat("selection")
         if f:
-            p.setColor(QPalette.HighlightedText, f.foreground().color())
-            p.setColor(QPalette.Highlight, f.background().color())
+            if f.hasProperty(QTextCharFormat.ForegroundBrush):
+                p.setColor(QPalette.HighlightedText, f.foreground().color())
+            if f.hasProperty(QTextCharFormat.BackgroundBrush):
+                p.setColor(QPalette.Highlight, f.background().color())
         f = self.baseformat("current-line")
-        if f:
+        if f and f.hasProperty(QTextCharFormat.BackgroundBrush):
             p.setColor(QPalette.AlternateBase, f.background().color())
 
         # Active color group
         f = self.baseformat("window", "focus")
         if f:
-            p.setColor(QPalette.Active, QPalette.Text, f.foreground().color())
-            p.setColor(QPalette.Active, QPalette.Base, f.background().color())
+            if f.hasProperty(QTextCharFormat.ForegroundBrush):
+                p.setColor(QPalette.Active, QPalette.Text, f.foreground().color())
+            if f.hasProperty(QTextCharFormat.BackgroundBrush):
+                p.setColor(QPalette.Active, QPalette.Base, f.background().color())
         f = self.baseformat("selection", "focus")
         if f:
-            p.setColor(QPalette.Active, QPalette.HighlightedText, f.foreground().color())
-            p.setColor(QPalette.Active, QPalette.Highlight, f.background().color())
+            if f.hasProperty(QTextCharFormat.ForegroundBrush):
+                p.setColor(QPalette.Active, QPalette.HighlightedText, f.foreground().color())
+            if f.hasProperty(QTextCharFormat.BackgroundBrush):
+                p.setColor(QPalette.Active, QPalette.Highlight, f.background().color())
         f = self.baseformat("current-line", "focus")
-        if f:
+        if f and f.hasProperty(QTextCharFormat.BackgroundBrush):
             p.setColor(QPalette.Active, QPalette.AlternateBase, f.background().color())
 
         # Disabled color group
         f = self.baseformat("window", "disabled")
         if f:
-            p.setColor(QPalette.Disabled, QPalette.Text, f.foreground().color())
-            p.setColor(QPalette.Disabled, QPalette.Base, f.background().color())
+            if f.hasProperty(QTextCharFormat.ForegroundBrush):
+                p.setColor(QPalette.Disabled, QPalette.Text, f.foreground().color())
+            if f.hasProperty(QTextCharFormat.BackgroundBrush):
+                p.setColor(QPalette.Disabled, QPalette.Base, f.background().color())
         f = self.baseformat("selection", "disabled")
         if f:
-            p.setColor(QPalette.Disabled, QPalette.HighlightedText, f.foreground().color())
-            p.setColor(QPalette.Disabled, QPalette.Highlight, f.background().color())
+            if f.hasProperty(QTextCharFormat.ForegroundBrush):
+                p.setColor(QPalette.Disabled, QPalette.HighlightedText, f.foreground().color())
+            if f.hasProperty(QTextCharFormat.BackgroundBrush):
+                p.setColor(QPalette.Disabled, QPalette.Highlight, f.background().color())
         f = self.baseformat("current-line", "disabled")
-        if f:
-            p.setColor(QPalette.Disabled, QPalette.AlternateBase, f.background().color())
+        if f and f.hasProperty(QTextCharFormat.BackgroundBrush):
+                p.setColor(QPalette.Disabled, QPalette.AlternateBase, f.background().color())
         return p
 
 
