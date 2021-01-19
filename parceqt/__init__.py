@@ -134,7 +134,7 @@ def adjust_widget(widget):
     b = builder(doc)
     source = QApplication
     h = SyntaxHighlighter.get_instance(b)
-    if h:
+    if h and h.formatter():
         source = h.formatter()
     widget.setFont(source.font(widget))
     widget.setPalette(source.palette(widget))
