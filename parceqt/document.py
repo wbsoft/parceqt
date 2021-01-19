@@ -29,7 +29,9 @@ that is automatically connected to the document.
 
 """
 
+from PyQt5.QtCore import QMimeData
 from PyQt5.QtGui import QTextCursor
+from PyQt5.QtWidgets import QApplication
 
 import parce.treedocument
 import parce.document
@@ -126,6 +128,12 @@ class Cursor(parce.document.Cursor):
 
     """
     def textCursor(self):
+        """Return a QTextCursor for our document with the same position and
+        selection.
+
+        (This method uses the Qt camelCase naming convention.)
+
+        """
         c = QTextCursor(self.document().document())
         if self.end is None:
             c.movePosition(QTextCursor.End)
@@ -133,5 +141,27 @@ class Cursor(parce.document.Cursor):
             c.setPosition(self.end)
         c.setPosition(self.start, QTextCursor.KeepAnchor)
         return c
+
+    def html(self):
+        """Return the selected range as HTML.
+
+        Uses the same theme(s) as the highlighter (if active).
+
+        """
+        from . import highlighter, treebuilder
+        from parce.out.html import HtmlFormatter
+        formatter = HtmlFormatter()
+        b = treebuilder.TreeBuilder.get_instance(self.document().document())
+        if b:
+            h = highlighter.SyntaxHighlighter.get_instance(b)
+            if h and h.formatter():
+                formatter.copy_themes(h.formatter())
+        return formatter.full_html(self)
+
+    def copy_html(self):
+        """Copy the selected range as HTML to the Qt clipboard."""
+        data = QMimeData()
+        data.setHtml(self.html())
+        QApplication.clipboard().setMimeData(data)
 
 

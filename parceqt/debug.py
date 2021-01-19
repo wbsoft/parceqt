@@ -36,7 +36,7 @@ The debug window shows highlighted text, and the tokenized tree structure.
 import operator
 import weakref
 
-from PyQt5.QtCore import pyqtSignal, QEvent, QMimeData, QObject, Qt, QTimer
+from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QTimer
 from PyQt5.QtGui import (
     QColor, QFont, QKeySequence, QPalette, QTextCharFormat, QTextCursor,
     QTextDocument,
@@ -489,13 +489,8 @@ class Actions:
 
     def copy_html(self):
         """Copy selected text as HTML."""
-        from parce.out.html import HtmlFormatter
         c = parceqt.cursor(self.mainwindow.textEdit.textCursor())
-        theme = parceqt.highlighter.SyntaxHighlighter.instance(self.mainwindow.builder).formatter().get_theme()
-        html = HtmlFormatter(theme).full_html(c)
-        data = QMimeData()
-        data.setHtml(html)
-        QApplication.clipboard().setMimeData(data)
+        c.copy_html()
 
     def toggle_tree_visibility(self, checked):
         """Handle Show Tree Structure checkbox toggle."""
