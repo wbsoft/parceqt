@@ -156,6 +156,11 @@ class DebugWindow(QMainWindow):
         self.textEdit.setFocus()
         self.set_theme()
 
+        # somewhat larger font by default
+        font = self.textEdit.font()
+        font.setPointSizeF(11)
+        self.textEdit.setFont(font)
+
     def create_model(self):
         """Instantiate a tree model for the tree view."""
         m = self.treeView.model()
