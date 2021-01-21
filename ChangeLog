@@ -2,6 +2,17 @@ ChangeLog
 =========
 
 
+current: parceqt-0.17.0
+
+- added Cursor.html() and copy_html() convenience methods
+- moved debugging logic (signals etc) to main treebuilder
+- debug: removed DebugFormatter, parce can now handle debug formatting itself
+- debug window: larger text font by default
+- fixed black colors in palette when textformat didn't specify color
+- fixed other little bugs
+- small api adjustments to parce-0.17.0
+
+
 2021-01-17: parceqt-0.16.0
 
 - added Edit → Copy selection as HTML
