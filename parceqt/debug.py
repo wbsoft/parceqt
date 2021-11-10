@@ -49,6 +49,7 @@ from PyQt5.QtWidgets import (
 
 import parce.formatter
 import parce.language
+import parce.registry
 import parce.theme
 import parce.themes
 import parce.util
@@ -595,13 +596,7 @@ class ExtraSelectionManager(QObject):
 
 def root_lexicons():
     """Get the root lexicons of all languages bundled with parce."""
-    lexicons = []
-    for lang in parce.language.get_all_languages():
-        root = getattr(lang, "root", None)
-        if root:
-            lexicons.append(root)
-    lexicons.sort(key=repr)
-    return lexicons
+    return [parce.registry.root_lexicon(name) for name in sorted(parce.registry.registry)]
 
 
 def lexicon_names(lexicons):

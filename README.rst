@@ -3,7 +3,7 @@ parceqt
 
 Small Python library to use parce with Qt's QTextDocument.
 
-This module depends on parce (https://parce.info/)
+This module depends on parce (https://parce.info/) and PyQt(https://riverbankcomputing.com/software/pyqt)
 
 | Homepage: https://github.com/wbsoft/parceqt
 | Download: https://pypi.org/project/parceqt
