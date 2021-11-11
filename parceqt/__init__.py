@@ -48,7 +48,7 @@ __all__ = (
 
 from PyQt5.QtWidgets import QApplication
 
-import parce.theme
+import parce
 
 from .pkginfo import version, version_string
 from .document import Cursor, Document
@@ -103,7 +103,7 @@ def highlight(doc, theme="default"):
         SyntaxHighlighter.delete_instance(b)
     else:
         if isinstance(theme, str):
-            theme = parce.theme.Theme.byname(theme)
+            theme = parce.theme_by_name(theme)
         formatter = Formatter(theme) if theme else None
         SyntaxHighlighter.instance(b).set_formatter(formatter)
 

@@ -2,6 +2,12 @@ ChangeLog
 =========
 
 
+2021-11-11: parceqt-0.25.0
+
+- bring version number and some API changes on par with parce
+- adjust debugger to API changes of parce.language; now use parce.registry
+
+
 2021-01-21: parceqt-0.17.0
 
 - added Cursor.html() and copy_html() convenience methods
