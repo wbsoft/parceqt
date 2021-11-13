@@ -44,7 +44,7 @@ from PyQt5.QtGui import (
 from PyQt5.QtWidgets import (
     QAction, QActionGroup, QApplication, QComboBox, QFileDialog, QHBoxLayout,
     QMainWindow, QMenu, QMenuBar, QPlainTextEdit, QPushButton, QSplitter,
-    QStatusBar, QTextEdit, QTreeView, QVBoxLayout, QWidget,
+    QStatusBar, QStyle, QTextEdit, QTreeView, QToolButton, QVBoxLayout, QWidget,
 )
 
 import parce.formatter
@@ -115,12 +115,18 @@ class DebugWindow(QMainWindow):
 
         top_layout = QHBoxLayout(margin=0, spacing=0)
 
+        self.guessButton = QToolButton(self,
+            clicked=self.guess_root_lexicon,
+            toolTip="Guess Language",
+            icon=self.style().standardIcon(QStyle.SP_BrowserReload))
         self.lexiconChooser = LexiconChooser(self)
         self.ancestorView = AncestorView(self)
+        top_layout.addWidget(self.guessButton)
         top_layout.addWidget(self.lexiconChooser)
         top_layout.addWidget(self.ancestorView)
         top_layout.addStretch(10)
         layout.addLayout(top_layout)
+        self.guessButton.setFixedHeight(self.lexiconChooser.sizeHint().height())
 
         splitter = QSplitter(self, orientation=Qt.Horizontal)
         layout.addWidget(splitter, 100)
@@ -185,6 +191,12 @@ class DebugWindow(QMainWindow):
     def set_root_lexicon(self, lexicon):
         """Set the root lexicon to use."""
         self.lexiconChooser.set_root_lexicon(lexicon)
+
+    def guess_root_lexicon(self):
+        """Again choose the root lexicon based on the text."""
+        text = self.document.toPlainText()
+        if text:
+            self.set_root_lexicon(parce.find(contents=text))
 
     def open_file(self, filename):
         """Read a file from disk and guess the language."""
