@@ -33,14 +33,14 @@ from PyQt5.QtCore import QMimeData
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QApplication
 
-import parce.treedocument
+import parce.work
 import parce.document
 
-from . import treebuilder
+from . import work
 
 
 class Document(
-    parce.treedocument.TreeDocumentMixin, parce.document.AbstractDocument):
+    parce.work.WorkerDocumentMixin, parce.document.AbstractDocument):
     """Document accesses a QTextDocument via the parce.Document API.
 
     There is no need to store this object, it is only used to access and
@@ -59,12 +59,11 @@ class Document(
     the background.
 
     """
-    def __init__(self, document, builder=None):
+    def __init__(self, document):
         """Initialize with QTextDocument."""
         parce.document.AbstractDocument.__init__(self)
-        if not builder:
-            builder = treebuilder.TreeBuilder.instance(document)
-        parce.treedocument.TreeDocumentMixin.__init__(self, builder)
+        worker = work.Worker.instance(document)
+        parce.work.WorkerDocumentMixin.__init__(self, worker)
         self._document = document
 
     def document(self):
@@ -80,18 +79,18 @@ class Document(
         # see https://bugreports.qt.io/browse/QTBUG-4841
         return self.document().characterCount() - 1
 
-    def _update_contents(self):
+    def _update_text(self, changes):
         """Apply the changes to our QTextDocument."""
         c = QTextCursor(self.document())
         c.beginEditBlock()
-        for start, end, text in reversed(self._changes):
+        for start, end, text in reversed(changes):
             c.setPosition(end)
             if start != end:
                 c.setPosition(start, QTextCursor.KeepAnchor)
             c.insertText(text)
         c.endEditBlock()
 
-    def _get_contents(self, start, end):
+    def _get_text(self, start, end):
         """Reimplemented to get a fragment of our text.
 
         This is faster than getting the whole text and using Python to slice it.

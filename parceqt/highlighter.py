@@ -38,7 +38,7 @@ class SyntaxHighlighter(util.SingleInstance):
 
     Instantiate with::
 
-        SyntaxHighlighter.instance(treebuilder)
+        SyntaxHighlighter.instance(worker)
 
     You need to set a :class:`~parceqt.formatter.Formatter` which supplies
     the highlighting text formats.
@@ -47,14 +47,14 @@ class SyntaxHighlighter(util.SingleInstance):
     Formatter, which is needed to enable highlighting.
 
     """
-    def __init__(self, builder):
+    def __init__(self, worker):
         self._formatter = None
         self._cursor = None      # remembers the range to rehighlight
-        builder.updated.connect(self.slot_updated)
-        builder.preview.connect(self.slot_preview, Qt.BlockingQueuedConnection)
+        worker.builder().updated.connect(self.slot_updated)
+        worker.builder().preview.connect(self.slot_preview, Qt.BlockingQueuedConnection)
 
-    def builder(self):
-        """Return the builder we were instantiated with."""
+    def worker(self):
+        """Return the worker we were instantiated with."""
         return self.target_object()
 
     def delete(self):
@@ -100,7 +100,7 @@ class SyntaxHighlighter(util.SingleInstance):
 
         """
         if self._formatter:
-            root = self.builder().get_root()
+            root = self.worker().get_root()
             if root is not None:
                 # no need to redraw if treebuilder is already busy
                 end = self.document().characterCount() - 1
@@ -110,7 +110,7 @@ class SyntaxHighlighter(util.SingleInstance):
 
     def document(self):
         """Return the QTextDocument."""
-        return self.builder().document()
+        return self.worker().document()
 
     def slot_preview(self, start, tree):
         """Called when there is a peek preview."""
@@ -123,7 +123,7 @@ class SyntaxHighlighter(util.SingleInstance):
     def slot_updated(self, start, end):
         """Called on update; performs the highlighting."""
         if self._formatter:
-            self.draw_highlighting(self.builder().root, start, end, True)
+            self.draw_highlighting(self.worker().builder().root, start, end, True)
 
     def draw_highlighting(self, root, start, end, interruptible=False):
         """Draw the highlighting using tree ``root`` from ``start`` to ``end``.

@@ -37,11 +37,8 @@ import parce.treebuilder
 from . import util
 
 
-class TreeBuilder(util.SingleInstance, parce.treebuilder.TreeBuilder, QObject):
+class TreeBuilder(parce.treebuilder.TreeBuilder, QObject):
     """A TreeBuilder that uses Qt signals instead of callbacks.
-
-    This TreeBuilder is attachted to a QTextDocument, and automatically
-    updates the tokens when the document changes.
 
     The signals ``begin_*``, ``end_*``, ``change_*`` signals can be used to
     connect a QAbstractItemModel to a tree builder, they are not needed for
@@ -73,82 +70,14 @@ class TreeBuilder(util.SingleInstance, parce.treebuilder.TreeBuilder, QObject):
     #: after how many characters a build preview is presented
     peek_threshold = 2000
 
-    #: set to True to print some debugging info to the console.
-    debugging = False
-
-    def __init__(self, document, root_lexicon=None):
+    def __init__(self, document):
         QObject.__init__(self, document)
-        parce.treebuilder.TreeBuilder.__init__(self, root_lexicon)
-        document.contentsChange.connect(self.slot_contents_change)
-        text = document.toPlainText()
-        if text:
-            self.rebuild(text)
-
-    def document(self):
-        """Return the QTextDocument, which is our parent."""
-        return self.parent()
-
-    def process(self):
-        """Reimplemented to print some debugging info if desired."""
-        for stage in super().process():
-            if self.debugging:
-                print("Processing stage:", stage)
-            yield stage
-
-    def start_processing(self):
-        """Reimplemented to start a background job."""
-        self._process = self.process()
-        self.process_loop()
-
-    def process_loop(self):
-        """Run the process; call a background thread for the "update" stage."""
-        for stage in self._process:
-            if stage == "build":
-                return util.call_async(self.background_loop, self.process_loop)
-        if not self.busy:
-            # during process_finished() a new process might have started
-            del self._process
-
-    def background_loop(self):
-        """Run the background (build) part of the process."""
-        for stage in self._process:
-            break
-
-    def process_started(self):
-        """Reimplemented to emit the ``started`` signal."""
-        self.started.emit()
-        super().process_started()
-
-    def process_finished(self):
-        """Reimplemented to emit the ``updated`` signal."""
-        self.updated.emit(self.start, self.end)
-        super().process_finished()
-
-    def wait(self):
-        """Wait for completion if a background job is running."""
-        if self.busy:
-            # we can't simply job.wait() because signals that are executed
-            # in the main thread would then deadlock.
-            loop = QEventLoop()
-            self.updated.connect(loop.quit)
-            loop.exec_()
+        parce.treebuilder.TreeBuilder.__init__(self)
 
     def peek(self, start, tree):
         """Reimplemented to get a sneak preview."""
         self.preview.emit(start, tree)
         super().peek(start, tree)
-
-    def root_lexicon(self):
-        """Return the current root lexicon."""
-        return self.root.lexicon
-
-    def set_root_lexicon(self, root_lexicon):
-        """Set the root lexicon to use to tokenize the text. Triggers a rebuild."""
-        self.rebuild(self.document().toPlainText(), root_lexicon)
-
-    def slot_contents_change(self, start, removed, added):
-        """Called after modification of the text, retokenizes the modified part."""
-        self.rebuild(self.document().toPlainText(), False, start, removed, added)
 
     def replace_nodes(self, context, slice_, nodes):
         """Reimplemented for fine-grained signals."""
@@ -174,4 +103,14 @@ class TreeBuilder(util.SingleInstance, parce.treebuilder.TreeBuilder, QObject):
         """Reimplemented for fine-grained signals."""
         super().replace_root_lexicon(lexicon)
         self.change_root_lexicon.emit()
+
+    def process_started(self):
+        """Reimplemented to emit the started signal."""
+        self.started.emit()
+        super().process_started()
+
+    def process_finished(self):
+        """Reimplemented to emit the updated signal."""
+        self.updated.emit(self.start, self.end)
+        super().process_finished()
 

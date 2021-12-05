@@ -53,19 +53,24 @@ import parce
 from .pkginfo import version, version_string
 from .document import Cursor, Document
 from .formatter import Formatter
-from .treebuilder import TreeBuilder
 from .highlighter import SyntaxHighlighter
 
 
-def builder(doc):
-    """Return the TreeBuilder responsible for tokenizing this QTextDocument.
+def worker(doc):
+    """Return the Worker responsible for tokenizing this QTextDocument.
 
-    If no TreeBuilder already existed, it is instantiated and becomes a child
-    of the QTextDocument. You can connect to its ``updated()`` or ``changed()``
-    signal to get notified of changes in the tokenized tree.
+    If no Worker already existed, it is instantiated and becomes a child of the
+    QTextDocument. You can connect to its signals to get notified of changes in
+    the tokenized tree or transformed result.
 
     """
-    return TreeBuilder.instance(doc)
+    from . import work
+    return work.Worker.instance(doc)
+
+
+def builder(doc):
+    """Return the TreeBuilder responsible for tokenizing this QTextDocument."""
+    return worker(doc).builder()
 
 
 def root(doc, wait=False):
@@ -75,17 +80,17 @@ def root(doc, wait=False):
     of ``treebuilder.TreeBuilder``.
 
     """
-    return builder(doc).get_root(wait)
+    return worker(doc).get_root(wait)
 
 
 def set_root_lexicon(doc, lexicon):
-    """Instatiate a TreeBuilder for the document if needed, and set its root lexicon."""
-    builder(doc).set_root_lexicon(lexicon)
+    """Instatiate a Worker for the document if needed, and set its root lexicon."""
+    Document(doc).set_root_lexicon(lexicon)
 
 
 def root_lexicon(doc):
     """Return the currently active root lexicon for the QTextDocument."""
-    return builder(doc).root_lexicon()
+    return builder(doc).root.lexicon
 
 
 def highlight(doc, theme="default"):
@@ -98,14 +103,14 @@ def highlight(doc, theme="default"):
     root_lexicon set.
 
     """
-    b = builder(doc)
+    w = worker(doc)
     if theme is False:
-        SyntaxHighlighter.delete_instance(b)
+        SyntaxHighlighter.delete_instance(w)
     else:
         if isinstance(theme, str):
             theme = parce.theme_by_name(theme)
         formatter = Formatter(theme) if theme else None
-        SyntaxHighlighter.instance(b).set_formatter(formatter)
+        SyntaxHighlighter.instance(w).set_formatter(formatter)
 
 
 def adjust_widget(widget):

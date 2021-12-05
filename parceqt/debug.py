@@ -144,8 +144,9 @@ class DebugWindow(QMainWindow):
         self.document = d = self.textEdit.document()
         self.textEdit.setDocument(self.document)
 
-        self.builder = b = parceqt.TreeBuilder.instance(d)
-        b.debugging = True
+        self.worker = w = parceqt.worker(d)
+        self.builder = b = w.builder()
+        w.debugging = True
 
         self.setStatusBar(QStatusBar())
         self.create_model()
@@ -223,7 +224,7 @@ class DebugWindow(QMainWindow):
             font.setPointSizeF(self.textEdit.font().pointSizeF()) # keep size
             self.textEdit.setFont(font)
             self.highlight_current_line()
-        h = parceqt.highlighter.SyntaxHighlighter.instance(self.builder)
+        h = parceqt.highlighter.SyntaxHighlighter.instance(self.worker)
         h.set_formatter(formatter)
 
     def slot_build_started(self):
@@ -235,17 +236,17 @@ class DebugWindow(QMainWindow):
         self.treeView.unsetCursor()
         self.slot_cursor_position_changed()
         self.statusBar().showMessage(", ".join(lexicon_names(self.builder.lexicons)))
-        tree = self.builder.get_root()
+        tree = self.worker.get_root()
         self.lexiconChooser.setToolTip(parceqt.treemodel.TreeModel.node_tooltip(tree))
         if self.show_updated_region_enabled:
             self.show_updated_region()
 
     def slot_cursor_position_changed(self):
         """Called when the text cursor moved."""
-        tree = self.builder.get_root()
+        tree = self.worker.get_root()
         if tree:
             pos = self.textEdit.textCursor().position()
-            doc = parceqt.document.Document(self.document, self.builder)
+            doc = parceqt.document.Document(self.document)
             token = doc.token(pos)
             if token:
                 self.ancestorView.set_token_path(token)
@@ -259,7 +260,7 @@ class DebugWindow(QMainWindow):
 
     def slot_item_clicked(self, index):
         """Called when a node in the tree view is clicked."""
-        tree = self.builder.get_root()
+        tree = self.worker.get_root()
         if tree:
             model = self.treeView.model()
             if model:
@@ -272,7 +273,7 @@ class DebugWindow(QMainWindow):
 
     def slot_node_clicked(self, node):
         """Called when a button in the ancestor view is clicked."""
-        tree = self.builder.get_root()
+        tree = self.worker.get_root()
         if tree and node.root() is tree:
             cursor = self.textEdit.textCursor()
             cursor.setPosition(node.end)
@@ -287,7 +288,7 @@ class DebugWindow(QMainWindow):
 
     def slot_root_lexicon_changed(self, lexicon):
         """Called when the root lexicon is changed."""
-        self.builder.set_root_lexicon(lexicon)
+        parceqt.set_root_lexicon(self.document, lexicon)
 
     def highlight_current_line(self):
         """Highlight the current line."""
