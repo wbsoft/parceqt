@@ -68,11 +68,6 @@ def worker(doc):
     return work.Worker.instance(doc)
 
 
-def builder(doc):
-    """Return the TreeBuilder responsible for tokenizing this QTextDocument."""
-    return worker(doc).builder()
-
-
 def root(doc, wait=False):
     """Get the root element of the tokenized tree of specified text document.
 
@@ -90,7 +85,7 @@ def set_root_lexicon(doc, lexicon):
 
 def root_lexicon(doc):
     """Return the currently active root lexicon for the QTextDocument."""
-    return builder(doc).root.lexicon
+    return worker(doc).builder().root.lexicon
 
 
 def highlight(doc, theme="default"):
@@ -136,9 +131,9 @@ def adjust_widget(widget):
 
     """
     doc = widget.document()
-    b = builder(doc)
+    w = worker(doc)
     source = QApplication
-    h = SyntaxHighlighter.get_instance(b)
+    h = SyntaxHighlighter.get_instance(w)
     if h and h.formatter():
         source = h.formatter()
     widget.setFont(source.font(widget))
