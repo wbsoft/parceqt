@@ -63,6 +63,8 @@ class Worker(util.SingleInstance, parce.work.Worker, QObject):
 
     def slot_contents_change(self, start, removed, added):
         """Called after modification of the text, retokenizes the modified part."""
+        if self.debugging:
+            print("Content Change: start {}, removed {}, added {}.".format(start, removed, added))
         self.update(self.document().toPlainText(), False, start, removed, added)
 
     ## reimplemented methods
