@@ -54,9 +54,9 @@ class Document(
     on the tokenized tree via the parce.Document API, you can use the same code
     to manipulate QTextDocuments in an interactive session.
 
-    As opposed to parce.Document, this Document class does not update the token
-    tree by itself, that is handled by the TreeBuilder that does its work in
-    the background.
+    Just like with parce.Document, updating the token tree (and the transformed
+    result) is handled by a Worker, which in ``parceqt`` is a QObject that
+    lives as long as the QTextDocument, in the background, as a child of it.
 
     """
     def __init__(self, document):
