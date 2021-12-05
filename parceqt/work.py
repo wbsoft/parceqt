@@ -37,11 +37,13 @@ class Worker(util.SingleInstance, parce.work.Worker, QObject):
     tokens (and optionally the transformed result) when the document changes.
 
     """
+    started = pyqtSignal()
     tree_updated = pyqtSignal(int, int)
     tree_finished = pyqtSignal()
     transform_finished = pyqtSignal()
 
-    debugging = True    #TMP
+    #: set debugging to True to print some info to the console while running
+    debugging = False
 
     def __init__(self, qtextdocument, treebuilder=None, transformer=None):
         if treebuilder is None:
@@ -70,15 +72,17 @@ class Worker(util.SingleInstance, parce.work.Worker, QObject):
 
         def fg():
             for stage in process:
+                if stage in ("tree_build", "transform_build"):
+                    if self.debugging:
+                        print("Processing stage BG:", stage)
+                    return util.call_async(bg, fg)
                 if self.debugging:
                     print("Processing stage FG:", stage)
-                if stage in ("tree_build", "transform_build"):
-                    return util.call_async(bg, fg)
 
         def bg():
             for stage in process:
                 if self.debugging:
-                    print("Processing stage BG:", stage)
+                    print("Processing stage FG:", stage)
                 break
 
         fg()
@@ -108,6 +112,11 @@ class Worker(util.SingleInstance, parce.work.Worker, QObject):
         loop = QEventLoop()
         self.transform_finished.connect(loop.quit)
         loop.exec_()
+
+    def start_build(self):
+        """Reimplemented to emit the ``started`` signal."""
+        self.started.emit()
+        return super().start_build()
 
     def finish_build(self):
         """Reimplemented to emit the ``tree_updated`` and

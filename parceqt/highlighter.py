@@ -50,7 +50,7 @@ class SyntaxHighlighter(util.SingleInstance):
     def __init__(self, worker):
         self._formatter = None
         self._cursor = None      # remembers the range to rehighlight
-        worker.builder().updated.connect(self.slot_updated)
+        worker.tree_updated.connect(self.slot_updated)
         worker.builder().preview.connect(self.slot_preview, Qt.BlockingQueuedConnection)
 
     def worker(self):

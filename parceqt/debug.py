@@ -156,8 +156,8 @@ class DebugWindow(QMainWindow):
         self.textEdit.installEventFilter(self)
         self.lexiconChooser.lexicon_changed.connect(self.slot_root_lexicon_changed)
         self.ancestorView.node_clicked.connect(self.slot_node_clicked)
-        b.started.connect(self.slot_build_started)
-        b.updated.connect(self.slot_build_updated)
+        w.started.connect(self.slot_build_started)
+        w.tree_updated.connect(self.slot_build_updated)
         self.textEdit.cursorPositionChanged.connect(self.slot_cursor_position_changed)
         self.treeView.clicked.connect(self.slot_item_clicked)
 
