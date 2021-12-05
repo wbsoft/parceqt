@@ -2,7 +2,7 @@
 #
 # This file is part of the parce-qt Python package.
 #
-# Copyright © 2020 by Wilbert Berendsen <info@wilbertberendsen.nl>
+# Copyright © 2020-2021 by Wilbert Berendsen <info@wilbertberendsen.nl>
 #
 # This module is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,18 +19,10 @@
 
 
 """
-This module implements a BackgroundTreeBuilder encapsulating a QTextDocument.
-
-Because it knows the document, it has access to the text, and therefore
-we implement root_lexicon() and set_root_lexicon() here.
-
-The TreeBuilder emits the updated(start, end) signal whenever new tokens
-are generated.
-
+This module implements a TreeBuilder emitting Qt signals.
 """
 
-from PyQt5.QtCore import pyqtSignal, QEventLoop, QObject
-from PyQt5.QtGui import QTextBlock
+from PyQt5.QtCore import pyqtSignal, QObject
 
 import parce.treebuilder
 
