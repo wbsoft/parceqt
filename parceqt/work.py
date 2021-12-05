@@ -119,8 +119,8 @@ class Worker(util.SingleInstance, parce.work.Worker, QObject):
         return super().start_build()
 
     def finish_build(self):
-        """Reimplemented to emit the ``tree_updated`` and
-        ``tree_finished``signals.
+        """Reimplemented to emit the ``tree_updated`` and ``tree_finished``
+        signals.
 
         """
         self.tree_updated.emit(self.builder().start, self.builder().end)

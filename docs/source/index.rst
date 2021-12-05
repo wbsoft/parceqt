@@ -8,13 +8,15 @@ Last update: |today|.
    :caption: Contents:
 
    parceqt.rst
-   document.rst
-   treebuilder.rst
-   highlighter.rst
-   formatter.rst
-   util.rst
-   treemodel.rst
    debug.rst
+   document.rst
+   formatter.rst
+   highlighter.rst
+   treebuilder.rst
+   treemodel.rst
+   util.rst
+   work.rst
+
 
 .. toctree::
    :hidden:
