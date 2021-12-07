@@ -101,7 +101,7 @@ class Document(
         c.setPosition(start, QTextCursor.KeepAnchor)
         return c.selection().toPlainText()
 
-    def contents_changed(self, start, removed, added):
+    def text_changed(self, start, removed, added):
         """Reimplemented to do nothing, it is already handled by TreeBuilder."""
         pass
 
