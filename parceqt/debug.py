@@ -72,8 +72,7 @@ class DebugWindow(QMainWindow):
         w.resize(1200,900)
         w.show()
 
-        w.set_theme("default")
-        w.adjust_widget()
+        w.set_theme("default", True)
 
         from parce.lang.css import *
         w.set_root_lexicon(Css.root)
@@ -609,7 +608,9 @@ class ExtraSelectionManager(QObject):
 
 def root_lexicons():
     """Get the root lexicons of all languages bundled with parce."""
-    return [parce.registry.root_lexicon(name) for name in sorted(parce.registry.registry)]
+    lexicons = [parce.registry.root_lexicon(name) for name in parce.registry.registry]
+    lexicons.sort(key=lambda lexicon: lexicon.fullname)
+    return lexicons
 
 
 def lexicon_names(lexicons):
