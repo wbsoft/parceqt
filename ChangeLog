@@ -2,10 +2,10 @@ ChangeLog
 =========
 
 
-current: parceqt-0.27.0
+2021-12-09: parceqt-0.27.0
 
 - requires parce 0.27
-- add worker module and adapt design to new parce Document/Worker
+- add work module and adapt design to new parce Document/Worker
 - add Guess button to debugger, to guess the language
 
 
