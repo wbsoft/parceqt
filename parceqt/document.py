@@ -30,7 +30,7 @@ that is automatically connected to the document.
 """
 
 from PyQt5.QtCore import QMimeData
-from PyQt5.QtGui import QTextCursor
+from PyQt5.QtGui import QTextCursor, QTextDocument
 from PyQt5.QtWidgets import QApplication
 
 import parce.work
@@ -59,6 +59,19 @@ class Document(
     lives as long as the QTextDocument, in the background, as a child of it.
 
     """
+    @property
+    def url(self):
+        """The url of this document, stored in QTextDocument's meta information."""
+        return self._document.metaInformation(QTextDocument.DocumentUrl)
+
+    @url.setter
+    def url(self, url):
+        self._document.setMetaInformation(QTextDocument.DocumentUrl, url)
+
+    @url.deleter
+    def url(self):
+        self._document.setMetaInformation(QTextDocument.DocumentUrl, "")
+
     def __init__(self, document):
         """Initialize with QTextDocument."""
         parce.document.AbstractDocument.__init__(self)
