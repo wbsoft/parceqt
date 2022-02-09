@@ -60,7 +60,7 @@ class TreeBuilder(parce.treebuilder.TreeBuilder, QObject):
     change_root_lexicon = pyqtSignal()
 
     #: after how many characters a build preview is presented
-    peek_threshold = 2000
+    peek_threshold = 5000
 
     def __init__(self, document):
         QObject.__init__(self, document)

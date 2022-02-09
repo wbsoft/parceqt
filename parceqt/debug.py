@@ -608,7 +608,8 @@ class ExtraSelectionManager(QObject):
 
 def root_lexicons():
     """Get the root lexicons of all languages bundled with parce."""
-    lexicons = [parce.registry.root_lexicon(name) for name in parce.registry.registry]
+    r = parce.registry.registry
+    lexicons = [r.lexicon(name) for name in r]
     lexicons.sort(key=lambda lexicon: lexicon.fullname)
     return lexicons
 
