@@ -5,7 +5,7 @@ ChangeLog
 current: parceqt-0.31.0
 
 - requires parce 0.31.0
-- Document() now also creates QTextDocument; use Document.get() to wrap an
+- Document() now also can create QTextDocument; use Document(doc) to wrap an
   existing document
 - small adaptations to parce API changes
 
