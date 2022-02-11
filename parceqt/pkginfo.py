@@ -59,5 +59,5 @@ url = "https://github.com/wbsoft/parceqt"
 license = "GPL"
 
 #: copyright year
-copyright_year = "2020-2021"
+copyright_year = "2020-2022"
 

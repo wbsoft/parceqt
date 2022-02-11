@@ -5,7 +5,9 @@ ChangeLog
 current: parceqt-0.31.0
 
 - requires parce 0.31.0
-- small adaptations to registry API changes
+- Document() now also creates QTextDocument; use Document.get() to wrap an
+  existing document
+- small adaptations to parce API changes
 
 
 2021-12-09: parceqt-0.27.0

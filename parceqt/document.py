@@ -33,20 +33,23 @@ from PyQt5.QtCore import QMimeData
 from PyQt5.QtGui import QTextCursor, QTextDocument
 from PyQt5.QtWidgets import QApplication
 
-import parce.work
+import parce.docio
 import parce.document
+import parce.work
 
-from . import work
+from . import treebuilder, work
 
 
-class Document(
+class Document(parce.docio.DocumentIOMixin,
     parce.work.WorkerDocumentMixin, parce.document.AbstractDocument):
     """Document accesses a QTextDocument via the parce.Document API.
 
-    There is no need to store this object, it is only used to access and
-    modify the contents of a QTextDocument. Example::
+    Instantiating Document creates a QTextDocument as well. Only that
+    QTextDocument really needs to be kept; there is no need to store the
+    Document object, it is only used to access and modify the contents of a
+    QTextDocument. Example::
 
-        d = Document(doc)   # where doc is an existing QTextDocument
+        d = Document.get(doc)   # where doc is an existing QTextDocument
         with d:
             d[5:5] = 'some text'
 
@@ -58,7 +61,36 @@ class Document(
     result) is handled by a Worker, which in ``parceqt`` is a QObject that
     lives as long as the QTextDocument, in the background, as a child of it.
 
+    The ``url`` property is stored in the QTextDocument's meta information;
+    only the ``encoding`` property is not retained when a Document is
+    instantiated again.
+
     """
+    def __init__(self, root_lexicon=None, text="", url=None, encoding=None, worker=None, transformer=None):
+        doc = self._document = QTextDocument(text)
+        doc.setModified(False)
+        parce.document.AbstractDocument.__init__(self, text, url, encoding)
+        if transformer is True:
+            from parce.transform import Transformer
+            transformer = Transformer()
+        if worker:
+            worker.builder().root.clear()
+            if transformer:
+                worker.set_transformer(transformer)
+        else:
+            worker = work.Worker.instance(doc, treebuilder.TreeBuilder(doc), transformer)
+        self._worker = worker
+        worker.builder().root.lexicon = root_lexicon
+
+    @classmethod
+    def get(cls, document):
+        """Create a Document instance that wraps the specified QTextDocument."""
+        d = cls.__new__(cls)    # bypass __init__
+        d._document = document
+        d._worker = work.Worker.instance(document)
+        parce.document.AbstractDocument.__init__(d)
+        return d
+
     @property
     def url(self):
         """The url of this document, stored in QTextDocument's meta information."""
@@ -72,12 +104,18 @@ class Document(
     def url(self):
         self._document.setMetaInformation(QTextDocument.DocumentUrl, "")
 
-    def __init__(self, document):
-        """Initialize with QTextDocument."""
-        parce.document.AbstractDocument.__init__(self)
-        worker = work.Worker.instance(document)
-        parce.work.WorkerDocumentMixin.__init__(self, worker)
-        self._document = document
+    @property
+    def revision(self):
+        """The QTextDocument's revision."""
+        return self._document.revision()
+
+    @property
+    def modified(self):
+        return self._document.isModified()
+
+    @modified.setter
+    def modified(self, modified):
+        self._document.setModified(modified)
 
     def document(self):
         """Return our QTextDocument."""

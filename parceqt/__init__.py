@@ -80,7 +80,7 @@ def root(doc, wait=False):
 
 def set_root_lexicon(doc, lexicon):
     """Instatiate a Worker for the document if needed, and set its root lexicon."""
-    Document(doc).set_root_lexicon(lexicon)
+    Document.get(doc).set_root_lexicon(lexicon)
 
 
 def root_lexicon(doc):
@@ -148,7 +148,7 @@ def cursor(cur):
     for the same selection or position.
 
     """
-    c = Cursor(Document(cur.document()))
+    c = Cursor(Document.get(cur.document()))
     c.pos = cur.selectionStart()
     c.end = cur.selectionEnd()
     return c
