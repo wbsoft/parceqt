@@ -37,6 +37,7 @@ name = "parceqt"
 #: the current version
 version = Version(0, 31, 0)
 version_suffix = ""
+#: the current version as a string
 version_string = "{}.{}.{}".format(*version) + version_suffix
 
 #: short description

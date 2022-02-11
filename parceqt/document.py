@@ -33,63 +33,104 @@ from PyQt5.QtCore import QMimeData
 from PyQt5.QtGui import QTextCursor, QTextDocument
 from PyQt5.QtWidgets import QApplication
 
-import parce.docio
 import parce.document
-import parce.work
 
-from . import treebuilder, work
+from . import treebuilder, work, highlighter
 
 
-class Document(parce.docio.DocumentIOMixin,
-    parce.work.WorkerDocumentMixin, parce.document.AbstractDocument):
+class Document(parce.DocumentInterface):
     """Document accesses a QTextDocument via the parce.Document API.
 
-    Instantiating Document creates a QTextDocument as well. Only that
-    QTextDocument really needs to be kept; there is no need to store the
+    There are two ways to construct a Document, and both use the default
+    constructor. The first and default way is calling the constructor with the
+    same arguments as the :class:`parce.Document` constructor. This way a
+    QTextDocument is created as well, containing the text. Only that
+    QTextDocument actually needs to be kept; there is no need to store the
     Document object, it is only used to access and modify the contents of a
-    QTextDocument. Example::
+    QTextDocument. An example::
 
-        d = Document.get(doc)   # where doc is an existing QTextDocument
-        with d:
-            d[5:5] = 'some text'
+        >>> d = parceqt.Document(MyLang.root, "text")
+        >>> d.document()
+        <PyQt5.QtGui.QTextDocument object at 0x7f6706473c10>
+
+    The second way is to call the constructor with the QTextDocument as the
+    first argument. This creates also a new Document instance, but it wraps the
+    existing QTextDocument, so that it can be accessed (again) via the *parce*
+    API.
+
+        >>> d = Document(doc)   # where doc is an existing QTextDocument
+        >>> with d:
+        ...     d[5:5] = 'some text'
 
     This is useful when you have written code that manipulates text files based
     on the tokenized tree via the parce.Document API, you can use the same code
-    to manipulate QTextDocuments in an interactive session.
+    to manipulate QTextDocuments, e.g. in a GUI editor.
 
     Just like with parce.Document, updating the token tree (and the transformed
     result) is handled by a Worker, which in ``parceqt`` is a QObject that
     lives as long as the QTextDocument, in the background, as a child of it.
 
     The ``url`` property is stored in the QTextDocument's meta information;
-    only the ``encoding`` property is not retained when a Document is
+    the ``encoding`` property is currently not retained when a Document is
     instantiated again.
+
+    It is not necessary to supply a ``worker``, because in *parceqt* the
+    :class:`~parceqt.work.Worker` is a child object of the QTextDocument and
+    instantiated automatically by this constructor.
+
+
 
     """
     def __init__(self, root_lexicon=None, text="", url=None, encoding=None, worker=None, transformer=None):
-        doc = self._document = QTextDocument(text)
-        doc.setModified(False)
-        parce.document.AbstractDocument.__init__(self, text, url, encoding)
-        if transformer is True:
-            from parce.transform import Transformer
-            transformer = Transformer()
-        if worker:
-            worker.builder().root.clear()
-            if transformer:
-                worker.set_transformer(transformer)
+        if isinstance(root_lexicon, QTextDocument):
+            # we wrap an existing QTextDocument
+            doc = root_lexicon
+            root_lexicon = text = None
         else:
-            worker = work.Worker.instance(doc, treebuilder.TreeBuilder(doc), transformer)
-        self._worker = worker
-        worker.builder().root.lexicon = root_lexicon
+            doc = QTextDocument(text)
+            doc.setModified(False)
+        self._document = doc
+        if not worker:
+            worker = work.Worker.instance(doc)
+        super().__init__(root_lexicon, text, url, encoding, worker, transformer)
 
-    @classmethod
-    def get(cls, document):
-        """Create a Document instance that wraps the specified QTextDocument."""
-        d = cls.__new__(cls)    # bypass __init__
-        d._document = document
-        d._worker = work.Worker.instance(document)
-        parce.document.AbstractDocument.__init__(d)
-        return d
+    def set_formatter(self, formatter):
+        """Set a :class:`~parceqt.formatter.Formatter` to enable syntax highlighting.
+
+        If ``formatter`` is None, highlighting is effectively disabled. If
+        False, the :class:`~parceqt.highlighter.SyntaxHighlighter` is deleted
+        if active.
+
+        Example::
+
+            >>> import parce
+            >>> import parceqt
+            >>> # of course create QApplication etc...
+            >>> f = parceqt.Formatter(parce.theme_by_name('default'))
+            >>> d = parceqt.Document.load("my_file.css")
+            >>> d.set_formatter(f)
+
+        The same Formatter can be used for multiple documents.
+
+        """
+        if formatter is False:
+            highlighter.SyntaxHighlighter.delete_instance(self.worker())
+        elif formatter:
+            highlighter.SyntaxHighlighter.instance(self.worker()).set_formatter(formatter)
+        else:
+            h = highlighter.SyntaxHighlighter.get_instance(self.worker())
+            if h:
+                h.set_formatter(None)
+
+    def formatter(self, formatter):
+        """Return the :class:`~parceqt.formatter.Formatter` that is used for syntax highlighting.
+
+        Returns None if no formatter was set.
+
+        """
+        h = highlighter.SyntaxHighlighter.get_instance(self.worker())
+        if h:
+            return h.formatter()
 
     @property
     def url(self):
@@ -111,6 +152,7 @@ class Document(parce.docio.DocumentIOMixin,
 
     @property
     def modified(self):
+        """Whether the QTextDocument is modified."""
         return self._document.isModified()
 
     @modified.setter

@@ -245,7 +245,7 @@ class DebugWindow(QMainWindow):
         tree = self.worker.get_root()
         if tree:
             pos = self.textEdit.textCursor().position()
-            doc = parceqt.document.Document.get(self.document)
+            doc = parceqt.document.Document(self.document)
             token = doc.token(pos)
             if token:
                 self.ancestorView.set_token_path(token)

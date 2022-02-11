@@ -16,6 +16,7 @@ Last update: |today|.
    treemodel.rst
    util.rst
    work.rst
+   pkginfo.rst
 
 
 .. toctree::

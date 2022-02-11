@@ -22,6 +22,7 @@
 This module provides a SyntaxHighlighter.
 """
 
+
 from PyQt5.QtCore import QEventLoop, QObject, Qt
 from PyQt5.QtGui import QGuiApplication, QTextCharFormat, QTextCursor, QTextLayout
 

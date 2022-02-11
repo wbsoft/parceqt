@@ -19,32 +19,24 @@
 
 
 """
-The Python parceqt module provides parce parsing and highlighting
+The Python *parceqt* module provides *parce* parsing and highlighting
 features for Qt's QTextDocument.
 
-This module depends on the parce module.
+This module depends on the :mod:`parce` module.
 
 With a few simple function calls you can highlight the syntax of
 QTextDocument using parce.
 
-"""
+Besides the functions below, the following classes and values are also
+accessible in this module scope:
+:class:`~.document.Cursor`,
+:class:`~.document.Document`,
+:class:`~.formatter.Formatter`,
+:class:`~.highlighter.SyntaxHighlighter`,
+:data:`~.pkginfo.version`,
+:data:`~.pkginfo.version_string`.
 
-__all__ = (
-    'Cursor',
-    'Document',
-    'Formatter',
-    'TreeBuilder',
-    'SyntaxHighlighter',
-    'builder',
-    'root',
-    'set_root_lexicon',
-    'root_lexicon',
-    'highlight',
-    'adjust_widget',
-    'cursor',
-    'version',
-    'version_string',
-)
+"""
 
 from PyQt5.QtWidgets import QApplication
 
@@ -57,7 +49,8 @@ from .highlighter import SyntaxHighlighter
 
 
 def worker(doc):
-    """Return the Worker responsible for tokenizing this QTextDocument.
+    """Return the :class:`~.work.Worker` responsible for tokenizing this
+    QTextDocument.
 
     If no Worker already existed, it is instantiated and becomes a child of the
     QTextDocument. You can connect to its signals to get notified of changes in
@@ -71,8 +64,9 @@ def worker(doc):
 def root(doc, wait=False):
     """Get the root element of the tokenized tree of specified text document.
 
-    See for more information about the arguments the ``get_root()`` method
-    of ``treebuilder.TreeBuilder``.
+    See for more information about the arguments the
+    :meth:`~.treebuilder.TreeBuilder.get_root` method of
+    :class:`~.treebuilder.TreeBuilder`.
 
     """
     return worker(doc).get_root(wait)
@@ -80,7 +74,7 @@ def root(doc, wait=False):
 
 def set_root_lexicon(doc, lexicon):
     """Instatiate a Worker for the document if needed, and set its root lexicon."""
-    Document.get(doc).set_root_lexicon(lexicon)
+    Document(doc).set_root_lexicon(lexicon)
 
 
 def root_lexicon(doc):
@@ -119,7 +113,7 @@ def adjust_widget(widget):
 
     Basically this is as simple as::
 
-        formatter = parceqt.formatter.Formatter(theme)
+        formatter = parceqt.Formatter(theme)
         widget.setFont(formatter.font())
         widget.setPalette(formatter.palette())
 
@@ -140,17 +134,14 @@ def adjust_widget(widget):
     widget.setPalette(source.palette(widget))
 
 
-def cursor(cur):
-    """Convenience function to return a Cursor for a Document that wraps a QTextDocument.
+def cursor(cursor):
+    """Convenience function to return a :class:`~.document.Cursor` with a
+    :class:`~.document.Document` that wraps a QTextDocument.
 
-    You can alter the document via the parce.Document API.
-    The returned Cursor has a textCursor() method that returns a QTextCursor
-    for the same selection or position.
+    The specified ``cursor`` must be a QTextCursor. You can alter the document
+    via the parce.Document API.
 
     """
-    c = Cursor(Document.get(cur.document()))
-    c.pos = cur.selectionStart()
-    c.end = cur.selectionEnd()
-    return c
+    return Cursor(Document(cursor.document()), cur.selectionStart(), cur.selectionEnd())
 
 
