@@ -1,4 +1,4 @@
-The pkgingo module
+The pkginfo module
 ==================
 
 .. automodule:: parceqt.pkginfo
