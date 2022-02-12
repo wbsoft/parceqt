@@ -24,7 +24,7 @@ features for Qt's QTextDocument.
 
 This module depends on the :mod:`parce` module.
 
-With a few simple function calls you can highlight the syntax of
+With a few simple function calls you can highlight the syntax of a
 QTextDocument using parce.
 
 Besides the functions below, the following classes and values are also
@@ -92,14 +92,10 @@ def highlight(doc, theme="default"):
     root_lexicon set.
 
     """
-    w = worker(doc)
-    if theme is False:
-        SyntaxHighlighter.delete_instance(w)
-    else:
-        if isinstance(theme, str):
-            theme = parce.theme_by_name(theme)
-        formatter = Formatter(theme) if theme else None
-        SyntaxHighlighter.instance(w).set_formatter(formatter)
+    if isinstance(theme, str):
+        theme = parce.theme_by_name(theme)
+    formatter = Formatter(theme) if theme else theme
+    Document(doc).set_formatter(formatter)
 
 
 def adjust_widget(widget):
@@ -125,11 +121,7 @@ def adjust_widget(widget):
 
     """
     doc = widget.document()
-    w = worker(doc)
-    source = QApplication
-    h = SyntaxHighlighter.get_instance(w)
-    if h and h.formatter():
-        source = h.formatter()
+    source = Document(doc).formatter() or QApplication
     widget.setFont(source.font(widget))
     widget.setPalette(source.palette(widget))
 
@@ -142,6 +134,6 @@ def cursor(cursor):
     via the parce.Document API.
 
     """
-    return Cursor(Document(cursor.document()), cur.selectionStart(), cur.selectionEnd())
+    return Cursor(Document(cursor.document()), cursor.selectionStart(), cursor.selectionEnd())
 
 

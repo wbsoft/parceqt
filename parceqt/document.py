@@ -122,7 +122,7 @@ class Document(parce.DocumentInterface):
             if h:
                 h.set_formatter(None)
 
-    def formatter(self, formatter):
+    def formatter(self):
         """Return the :class:`~parceqt.formatter.Formatter` that is used for syntax highlighting.
 
         Returns None if no formatter was set.
@@ -240,14 +240,10 @@ class Cursor(parce.document.Cursor):
         Uses the same theme(s) as the highlighter (if active).
 
         """
-        from . import highlighter, treebuilder
         from parce.out.html import HtmlFormatter
         formatter = HtmlFormatter()
-        b = treebuilder.TreeBuilder.get_instance(self.document().document())
-        if b:
-            h = highlighter.SyntaxHighlighter.get_instance(b)
-            if h and h.formatter():
-                formatter.copy_themes(h.formatter())
+        if self.document().formatter():
+            formatter.copy_themes(self.document().formatter())
         return formatter.full_html(self)
 
     def copy_html(self):

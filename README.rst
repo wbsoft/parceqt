@@ -28,6 +28,7 @@ Example:
 
     parceqt.set_root_lexicon(doc, Xml.root)
     parceqt.highlight(doc)
+    parceqt.adjust_widget(e)    # adjust widgets font and base colors
 
 Now the text in the document is automatically highlighted using the specified
 root lexicon; the highlighting is updated as the user modifies the text.
