@@ -11,6 +11,7 @@ Last update: |today|.
    debug.rst
    document.rst
    formatter.rst
+   gadgets.rst
    highlighter.rst
    treebuilder.rst
    treemodel.rst
