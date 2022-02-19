@@ -12,3 +12,12 @@ The gadgets.extraselectionmanager module
     :undoc-members:
     :show-inheritance:
 
+
+The gadgets.languagemenuaction module
+----------------------------------------
+
+.. automodule:: parceqt.gadgets.languagemenuaction
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

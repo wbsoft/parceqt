@@ -56,6 +56,7 @@ import parceqt.highlighter
 import parceqt.treebuilder
 import parceqt.treemodel
 import parceqt.widgets.lexiconchooser
+import parceqt.gadgets.languagemenuaction
 from parceqt.gadgets.extraselectionmanager import ExtraSelectionManager
 
 
@@ -191,7 +192,7 @@ class DebugWindow(QMainWindow):
     def set_root_lexicon(self, lexicon):
         """Set the root lexicon to use."""
         self.lexiconChooser.set_lexicon(lexicon)
-        self._actions.set_root_lexicon(lexicon)
+        self._actions.view_language.set_lexicon(lexicon)
 
     def guess_root_lexicon(self):
         """Again choose the root lexicon based on the text."""
@@ -289,7 +290,7 @@ class DebugWindow(QMainWindow):
     def slot_root_lexicon_changed(self, lexicon):
         """Called when the root lexicon is changed."""
         parceqt.set_root_lexicon(self.document, lexicon)
-        self._actions.set_root_lexicon(lexicon)
+        self._actions.view_language.set_lexicon(lexicon)
 
     def highlight_current_line(self):
         """Highlight the current line."""
@@ -425,31 +426,10 @@ class Actions:
         m.addSeparator()
         m.addAction(self.view_theme_reload)
         # languages
-        self.view_language = QAction()
-        self.view_language_guess = QAction()
-        m = QMenu()
-        self.view_language.setMenu(m)
-        g = self.view_language_actiongroup = QActionGroup(None)
-        a = QAction(g, checkable=True)
-        a.setText("&None")
-        a.setObjectName("None")
-        m.addAction(a)
+        self.view_language = a = parceqt.gadgets.languagemenuaction.LanguageMenuAction()
+        m = a.menu()
         m.addSeparator()
-        reg = parce.registry.registry.by_section()
-        for sect in sorted(reg):
-            if sect:
-                submenu = QMenu()
-                a = QAction(sect, m)
-                a.setMenu(submenu)
-                m.addAction(a)
-                entries = sorted(("{} ({})".format(entry.desc, entry.name), qualname) for qualname, entry in reg[sect].items())
-                for name, qualname in entries:
-                    a = QAction(g, checkable=True)
-                    a.setObjectName(qualname)
-                    a.setText(name)
-                    submenu.addAction(a)
-        m.addSeparator()
-        m.addAction(self.view_language_guess)
+        self.view_language_guess = m.addAction("")
 
     def set_action_texts(self):
         self.file_open.setText("&Open File...")
@@ -504,8 +484,8 @@ class Actions:
         self.view_updated_region.triggered.connect(self.toggle_updated_region_visibility)
         self.view_theme_actiongroup.triggered.connect(self.slot_view_theme_selected)
         self.view_theme_reload.triggered.connect(self.reload_theme)
+        self.view_language.lexicon_changed.connect(self.mainwindow.set_root_lexicon)
         self.view_language_guess.triggered.connect(self.mainwindow.guess_root_lexicon)
-        self.view_language_actiongroup.triggered.connect(self.slot_view_language_selected)
 
     def open_file(self):
         """Implementation of Open File action."""
@@ -535,15 +515,6 @@ class Actions:
             theme = action.text()
         self.mainwindow.set_theme(theme)
 
-    def slot_view_language_selected(self, action):
-        """Switch to the selected language."""
-        if action.objectName() == "None":
-            lexicon = None
-        else:
-            r = parce.registry.registry
-            lexicon = r.lexicon(action.objectName())
-        self.mainwindow.set_root_lexicon(lexicon)
-
     def tree_expand_all(self):
         """Implementation of Expand All action."""
         self.mainwindow.treeView.expandAll()
@@ -557,29 +528,6 @@ class Actions:
         action = self.view_theme_actiongroup.checkedAction()
         if action:
             self.slot_view_theme_selected(action)
-
-    def set_root_lexicon(self, lexicon):
-        """Select the corresponding action in the language menu."""
-        for a in self.view_language_actiongroup.actions():
-            if lexicon:
-                if lexicon.qualname != a.objectName():
-                    continue
-            elif a.objectName() != "None":
-                continue
-            a.setChecked(True)
-            return
-        # no menu entry for this lexicon
-        a = self.view_language_actiongroup.checkedAction()
-        if a:
-            a.setChecked(False)
-
-
-def root_lexicons():
-    """Get the root lexicons of all languages bundled with parce."""
-    r = parce.registry.registry
-    lexicons = [r.lexicon(name) for name in r]
-    lexicons.sort(key=lambda lexicon: lexicon.fullname)
-    return lexicons
 
 
 def lexicon_names(lexicons):
