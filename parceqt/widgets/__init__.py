@@ -19,5 +19,6 @@
 
 
 """
-Various Qt-related helper classes and objects.
+Various parce-related Qt Widgets.
 """
+

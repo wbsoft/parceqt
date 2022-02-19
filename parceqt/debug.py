@@ -55,6 +55,7 @@ import parceqt
 import parceqt.highlighter
 import parceqt.treebuilder
 import parceqt.treemodel
+import parceqt.widgets.lexiconchooser
 from parceqt.gadgets.extraselectionmanager import ExtraSelectionManager
 
 
@@ -189,7 +190,7 @@ class DebugWindow(QMainWindow):
 
     def set_root_lexicon(self, lexicon):
         """Set the root lexicon to use."""
-        self.lexiconChooser.set_root_lexicon(lexicon)
+        self.lexiconChooser.set_lexicon(lexicon)
         self._actions.set_root_lexicon(lexicon)
 
     def guess_root_lexicon(self):
@@ -333,6 +334,15 @@ class DebugWindow(QMainWindow):
         return False
 
 
+class LexiconChooser(parceqt.widgets.lexiconchooser.LexiconChooser):
+    def display_name(self, qualname):
+        """Reimplemented to show the full root lexicon name."""
+        if qualname:
+            mod, cls, root = qualname.rsplit('.', 2)
+            return cls + '.' + root
+        return "None"
+
+
 class AncestorView(QWidget):
     """Displays a horizontal row of buttons for a token."""
     node_clicked = pyqtSignal(object)
@@ -378,41 +388,6 @@ class AncestorView(QWidget):
             button.setText(name)
             button.setToolTip(tip)
             layout.addWidget(button)
-
-
-class LexiconChooser(QComboBox):
-    """A combobox showing available lexicons."""
-    lexicon_changed = pyqtSignal(object)
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.populate()
-        self.currentIndexChanged.connect(self.slot_current_index_changed)
-
-    def populate(self):
-        """Populate the combobox with the available root lexicons in parce."""
-        self.clear()
-        self.lexicons = [None]
-        self.lexicons.extend(root_lexicons())
-        self.addItems(map(repr, self.lexicons))
-
-    def set_root_lexicon(self, lexicon):
-        """Set the current root lexicon, may also be a new one, which is appended then."""
-        try:
-            i = self.lexicons.index(lexicon)
-        except ValueError:
-            i = len(self.lexicons)
-            self.lexicons.append(lexicon)
-            self.addItem(repr(lexicon))
-        self.setCurrentIndex(i)
-
-    def root_lexicon(self):
-        """Return the current root lexicon."""
-        return self.lexicons[self.currentIndex()]
-
-    def slot_current_index_changed(self, i):
-        """Called on index change, emits the lexicon_changed signal."""
-        self.lexicon_changed.emit(self.lexicons[i])
 
 
 class Actions:

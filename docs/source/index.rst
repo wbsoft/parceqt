@@ -16,6 +16,7 @@ Last update: |today|.
    treebuilder.rst
    treemodel.rst
    util.rst
+   widgets.rst
    work.rst
    pkginfo.rst
 
