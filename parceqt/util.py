@@ -24,7 +24,7 @@ Various utility classes and functions.
 
 import weakref
 
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QObject, QThread
 
 
 _jobs = set()   # store running Job instances
@@ -63,49 +63,35 @@ class Job(QThread):
                 self._finished()
 
 
-class SingleInstance:
+class SingleInstance(QObject):
     """Keeps a single instance around for another object.
 
     We keep only a weak reference to the object, if the object is garbage
     collected, we disappear as well.
 
     """
-    @classmethod
-    def instance(cls, obj, *args, **kwargs):
-        """Get or create the instance for obj."""
-        try:
-            return cls._instances[obj]
-        except AttributeError:
-            cls._instances = weakref.WeakKeyDictionary()
-        except KeyError:
-            pass
-        # target must be in place before init is called
-        new = cls._instances[obj] = cls.__new__(cls)
-        new._target = weakref.ref(obj)
-        new.__init__(obj, *args, **kwargs)
-        return new
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent)
 
     @classmethod
-    def delete_instance(cls, obj):
+    def instance(cls, parent, *args, **kwargs):
+        """Get or create the instance for ``parent``."""
+        instance = parent.findChild(cls)
+        if not instance:
+            instance = cls(parent, *args, **kwargs)
+        return instance
+
+    @classmethod
+    def delete_instance(cls, parent):
         """Actively remove the stored instance."""
-        try:
-            instance = cls._instances[obj]
-        except (KeyError, AttributeError):
-            pass
-        else:
+        instance = parent.findChild(cls)
+        if instance:
             instance.delete()
 
     @classmethod
-    def get_instance(cls, obj):
+    def get_instance(cls, parent):
         """Return the instance if it already exists, else returns None."""
-        try:
-            return cls._instances[obj]
-        except (AttributeError, KeyError):
-            pass
-
-    def target_object(self):
-        """Return the object we are stored for."""
-        return self._target()
+        return parent.findChild(cls)
 
     def delete(self):
         """Delete the stored reference to ourself.
@@ -115,9 +101,8 @@ class SingleInstance:
         directly or via delete_instance().
 
         """
-        obj = self._target()
-        if obj is not None:
-            del self.__class__._instances[obj]
+        self.setParent(None)
+        self.deleteLater()
 
 
 def call_async(function, finished=None):

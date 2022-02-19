@@ -49,6 +49,7 @@ class SyntaxHighlighter(util.SingleInstance):
 
     """
     def __init__(self, worker):
+        super().__init__(worker)
         self._formatter = None
         self._cursor = None      # remembers the range to rehighlight
         worker.tree_updated.connect(self.slot_updated)
@@ -56,12 +57,16 @@ class SyntaxHighlighter(util.SingleInstance):
 
     def worker(self):
         """Return the worker we were instantiated with."""
-        return self.target_object()
+        return self.parent()
 
     def delete(self):
         """Reimplemented to clear the highlighting before delete."""
         self.clear()
         super().delete()
+
+    def document(self):
+        """Return the QTextDocument."""
+        return self.worker().document()
 
     def set_formatter(self, formatter):
         """Set the Formatter to use, or None for no formatter.
@@ -108,10 +113,6 @@ class SyntaxHighlighter(util.SingleInstance):
                 self.draw_highlighting(root, 0, end, True)
         else:
             self.clear()
-
-    def document(self):
-        """Return the QTextDocument."""
-        return self.worker().document()
 
     def slot_preview(self, start, tree):
         """Called when there is a peek preview."""

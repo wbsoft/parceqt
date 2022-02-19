@@ -23,14 +23,14 @@ The Worker class, inheriting from parce's Worker class.
 """
 
 
-from PyQt5.QtCore import pyqtSignal, QEventLoop, QObject
+from PyQt5.QtCore import pyqtSignal, QEventLoop
 
 import parce.work
 
 from . import util
 
 
-class Worker(util.SingleInstance, parce.work.Worker, QObject):
+class Worker(parce.work.Worker, util.SingleInstance):
     """A Worker that uses Qt signals instead of callbacks.
 
     This Worker is attachted to a QTextDocument, and automatically updates the
@@ -49,7 +49,7 @@ class Worker(util.SingleInstance, parce.work.Worker, QObject):
         if treebuilder is None:
             from .treebuilder import TreeBuilder
             treebuilder = TreeBuilder(qtextdocument)
-        QObject.__init__(self, qtextdocument)
+        util.SingleInstance.__init__(self, qtextdocument)
         parce.work.Worker.__init__(self, treebuilder, transformer)
         qtextdocument.contentsChange.connect(self.slot_contents_change)
         text = qtextdocument.toPlainText()
