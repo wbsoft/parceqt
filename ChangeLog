@@ -2,6 +2,15 @@ ChangeLog
 =========
 
 
+current: parceqt-0.32.0
+
+- requires parce 0.32.0
+- added gadgets module with ExtraSelectionManager and LanguageMenuAction
+- added widgets module with LexiconChooser
+- debugger: added language selection in View menu
+- simplified handling of singleton QObject instances.
+
+
 2022-02-12: parceqt-0.31.0
 
 - requires parce 0.31.0
