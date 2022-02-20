@@ -36,7 +36,7 @@ class LanguageMenuAction(QAction):
 
     """
     lexicon_changed = pyqtSignal(object)
-    """This signal is emitted when the current lexicon changes.
+    """This signal is emitted when a language is selected by the user.
 
     The single argument is a :class:`~parce.lexicon.Lexicon` or None.
 
@@ -82,7 +82,7 @@ class LanguageMenuAction(QAction):
                 a.setChecked(True)
                 return
         a = self._actionGroup.checkedAction()
-        if a and a.isChecked():
+        if a:
             a.setChecked(False)
 
     def lexicon(self):
@@ -92,7 +92,7 @@ class LanguageMenuAction(QAction):
             qualname = a.objectName()
             if qualname:
                 r = self.registry()
-                return r.lexicon(r[qualname])
+                return r.lexicon(qualname)
 
     def _slot_language_selected(self, action):
         """Called when an action is triggered."""
