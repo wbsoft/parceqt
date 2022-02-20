@@ -154,7 +154,7 @@ class DebugWindow(QMainWindow):
         # signal connections
         self.textEdit.viewport().installEventFilter(self)
         self.textEdit.installEventFilter(self)
-        self.lexiconChooser.lexicon_changed.connect(self.slot_root_lexicon_changed)
+        self.lexiconChooser.lexicon_changed.connect(self.set_root_lexicon)
         self.ancestorView.node_clicked.connect(self.slot_node_clicked)
         w.started.connect(self.slot_build_started)
         w.tree_updated.connect(self.slot_build_updated)
@@ -191,6 +191,7 @@ class DebugWindow(QMainWindow):
 
     def set_root_lexicon(self, lexicon):
         """Set the root lexicon to use."""
+        parceqt.set_root_lexicon(self.document, lexicon)
         self.lexiconChooser.set_lexicon(lexicon)
         self._actions.view_language.set_lexicon(lexicon)
 
@@ -286,11 +287,6 @@ class DebugWindow(QMainWindow):
                 index = model.get_model_index(node)
                 self.treeView.expand(index)
                 self.treeView.setCurrentIndex(index)
-
-    def slot_root_lexicon_changed(self, lexicon):
-        """Called when the root lexicon is changed."""
-        parceqt.set_root_lexicon(self.document, lexicon)
-        self._actions.view_language.set_lexicon(lexicon)
 
     def highlight_current_line(self):
         """Highlight the current line."""
