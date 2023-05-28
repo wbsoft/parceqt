@@ -126,7 +126,7 @@ class Formatter(parce.formatter.Formatter):
 
 def _color(c):
     """Convert css.Color to QColor."""
-    return QColor(c.r, c.g, c.b, c.a * 255)
+    return QColor(c.r, c.g, c.b, int(c.a * 255))
 
 
 def _font_point_size(size, unit):
