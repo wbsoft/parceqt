@@ -2,6 +2,11 @@ ChangeLog
 =========
 
 
+2023-05-28: parceqt-0.33.0
+
+- fixes a TypeError with recent Python and recent PyQt5: supply int to QColor()
+
+
 2022-03-14: parceqt-0.32.0
 
 - requires parce 0.32.0
