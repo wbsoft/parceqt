@@ -2,7 +2,7 @@ ChangeLog
 =========
 
 
-current: parceqt-0.32.0
+2022-03-14: parceqt-0.32.0
 
 - requires parce 0.32.0
 - added gadgets module with ExtraSelectionManager and LanguageMenuAction
