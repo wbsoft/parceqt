@@ -342,7 +342,7 @@ class LexiconChooser(parceqt.widgets.lexiconchooser.LexiconChooser):
 
 class AncestorView(QWidget):
     """Displays a horizontal row of buttons for a token."""
-    node_clicked = pyqtSignal(object)
+    node_clicked = pyqtSignal(object) #: Qt signal, emitted when a node is clicked.
 
     _clicking = parce.util.Switch()
 

@@ -37,10 +37,18 @@ class Worker(parce.work.Worker, util.SingleInstance):
     tokens (and optionally the transformed result) when the document changes.
 
     """
+    #: Qt signal emitted with no arguments when :meth:`start_build()` is called.
     started = pyqtSignal()
+
+    #: Qt signal emitted with two arguments (start, end) when the tree has been updated.
     tree_updated = pyqtSignal(int, int)
+
+    #: Qt signal emitted with no arguments just after :attr:`tree_updated` has been emitted.
     tree_finished = pyqtSignal()
+
+    #: Qt signal emitted with no arguments when the transformation has been finished.
     transform_finished = pyqtSignal()
+
 
     #: set debugging to True to print some info to the console while running
     debugging = False
