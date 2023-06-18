@@ -35,7 +35,7 @@ Version = collections.namedtuple("Version", "major minor patch")
 name = "parceqt"
 
 #: the current version
-version = Version(0, 33, 0)
+version = Version(0, 34, 0)
 version_suffix = ""
 #: the current version as a string
 version_string = "{}.{}.{}".format(*version) + version_suffix
@@ -60,5 +60,5 @@ url = "https://github.com/wbsoft/parceqt"
 license = "GPL"
 
 #: copyright year
-copyright_year = "2020-2022"
+copyright_year = "2020-2023"
 
