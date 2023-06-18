@@ -4,7 +4,7 @@ The widgets package
 .. automodule:: parceqt.widgets
 
 
-The gadgets.lexiconchooser module
+The widgets.lexiconchooser module
 ---------------------------------
 
 .. automodule:: parceqt.widgets.lexiconchooser
